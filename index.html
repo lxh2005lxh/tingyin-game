@@ -2184,16 +2184,11 @@ function switchClassListTab(tabName) {
 function adminLogin() {
     var pwd = document.getElementById('admin-password').value;
     if (pwd === S.adminPassword) {
-        // ===== 通过 WebSocket 验证管理员身份 =====
-        if (WS.connected) {
-            WS.send({type: 'adminLogin', password: pwd});
-        } else {
-            // 回退：本地验证（仅在离线模式）
-            S.currentUser = {name: '老师', isTeacher: true};
-            showPage('admin');
-            // 初始化老师后台题库管理模块
-            initAdminGradeSelectors();
-        }
+        // 密码验证通过，直接跳转管理后台
+        S.currentUser = {name: '老师', isTeacher: true};
+        showPage('admin');
+        // 初始化老师后台题库管理模块
+        initAdminGradeSelectors();
     } else {
         toast('密码错误');
     }
