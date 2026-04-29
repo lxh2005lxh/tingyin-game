@@ -1,0 +1,3650 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<!-- PWA 支持 -->
+<meta name="theme-color" content="#667eea">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="听音对战">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>听音对战 - 三年级英语对战游戏</title>
+<style>
+/* ============ 基础样式优化 ============ */
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--p:#FF6B6B;--s:#4ECDC4;--a:#FFE66D;--ok:#51CF66;--x:#FF6B6B;--d:#2D3436;--l:#F8F9FA}
+html{font-size:16px}
+body{font-family:-apple-system,BlinkMacSystemFont,'Microsoft YaHei',sans-serif;background:linear-gradient(135deg,#667eea,#764ba2);min-height:100vh;color:var(--d)}
+
+/* ============ 手机端优化 ============ */
+/* 触摸反馈 - 防止300ms延迟 */
+@media (hover: none) {
+    * { -webkit-tap-highlight-color: rgba(0,0,0,0.1); }
+}
+
+/* 按钮尺寸 - 手机端加大 */
+.btn{
+    width:100%;
+    padding:18px 20px; /* 原来是15px */
+    border:none;
+    border-radius:14px;
+    font-size:17px; /* 原来是16px */
+    font-weight:bold;
+    cursor:pointer;
+    margin-bottom:14px;
+    min-height:56px; /* 确保按钮足够大，方便触摸 */
+    touch-action:manipulation; /* 优化触摸 */
+    user-select:none;
+    -webkit-user-select:none;
+}
+.btn:active{transform:scale(0.96);opacity:0.9}
+
+/* 选项按钮 - 手机端加大 */
+.opt{
+    padding:20px 15px; /* 加大内边距 */
+    background:#fff;
+    border:3px solid #E9ECEF;
+    border-radius:16px;
+    font-size:17px;
+    cursor:pointer;
+    text-align:center;
+    min-height:60px;
+    touch-action:manipulation;
+}
+.opt:active{transform:scale(0.96)}
+
+/* 输入框 - 手机端优化 */
+.ig input,.ig select{
+    width:100%;
+    padding:16px 15px; /* 加大 */
+    border:2px solid #E9ECEF;
+    border-radius:12px;
+    font-size:17px; /* 加大，防止iOS缩放 */
+}
+.ig input:focus{outline:none;border-color:var(--p)}
+.ig input::placeholder{color:#adb5bd}
+
+/* 卡片 - 手机端增加内边距 */
+.card{background:#fff;border-radius:24px;padding:28px;margin-bottom:20px;box-shadow:0 6px 20px rgba(0,0,0,0.12)}
+
+/* 菜单项 - 手机端加大 */
+.menu-item{
+    background:#fff;
+    border-radius:18px;
+    padding:22px; /* 加大 */
+    display:flex;
+    align-items:center;
+    gap:16px;
+    box-shadow:0 4px 15px rgba(0,0,0,0.1);
+    cursor:pointer;
+    min-height:80px; /* 确保触摸区域够大 */
+}
+.menu-item:active{transform:scale(0.98);background:#f8f9fa}
+
+/* 图标 - 手机端加大 */
+.mi{width:56px;height:56px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:28px}
+
+/* 语音按钮 - 手机端加大 */
+.abtn{
+    width:110px;
+    height:110px;
+    border-radius:50%;
+    background:linear-gradient(135deg,var(--p),#FF8E53);
+    border:none;
+    color:#fff;
+    font-size:44px;
+    cursor:pointer;
+    margin:20px 0;
+    box-shadow:0 6px 25px rgba(255,107,107,0.4);
+    touch-action:manipulation;
+}
+.abtn:active{transform:scale(0.92)}
+
+/* 聊天输入 - 手机端固定底部 */
+.chat-input-container{
+    position:fixed;
+    bottom:0;
+    left:0;
+    right:0;
+    background:#fff;
+    padding:12px 16px;
+    padding-bottom:max(12px, env(safe-area-inset-bottom));
+    box-shadow:0 -2px 10px rgba(0,0,0,0.1);
+    display:flex;
+    gap:10px;
+    align-items:center;
+}
+.chat-input-container input{
+    flex:1;
+    padding:14px 16px;
+    border:2px solid #E9ECEF;
+    border-radius:25px;
+    font-size:16px;
+    background:#F8F9FA;
+}
+.chat-input-container button{
+    padding:14px 20px;
+    background:linear-gradient(135deg,var(--p),#FF8E53);
+    color:#fff;
+    border:none;
+    border-radius:25px;
+    font-size:15px;
+    font-weight:bold;
+    cursor:pointer;
+    touch-action:manipulation;
+}
+.chat-input-container button:active{transform:scale(0.95)}
+
+/* 房间成员标签 - 手机端优化 */
+.member-tag{
+    display:inline-flex;
+    align-items:center;
+    padding:8px 14px;
+    background:#E8F5E9;
+    color:#2E7D32;
+    border-radius:20px;
+    font-size:14px;
+    margin:4px;
+}
+
+/* 警告提示 - 手机端优化 */
+.warning-box{
+    background:#FFF3CD;
+    color:#856404;
+    padding:14px 16px;
+    border-radius:12px;
+    margin-top:12px;
+    font-size:15px;
+}
+
+/* 弹窗 - 手机端全屏 */
+.modal-c{
+    background:#fff;
+    border-radius:24px 24px 0 0;
+    padding:28px;
+    width:100%;
+    max-width:100%;
+    max-height:85vh;
+    overflow-y:auto;
+    animation:slideUp .3s;
+    margin-top:auto;
+}
+@media(min-width:500px){
+    .modal-c{
+        border-radius:24px;
+        max-width:420px;
+        margin:auto;
+    }
+}
+
+/* 页面容器 - 预留底部空间 */
+.c{max-width:480px;margin:0 auto;padding:16px;min-height:100vh;padding-bottom:100px}
+.hdr{text-align:center;padding:20px 0;color:#fff}
+.hdr h1{font-size:28px;margin-bottom:5px;text-shadow:2px 2px 4px rgba(0,0,0,0.2)}
+.card{background:#fff;border-radius:20px;padding:25px;margin-bottom:20px;box-shadow:0 4px 15px rgba(0,0,0,0.1)}
+.btn{width:100%;padding:15px 20px;border:none;border-radius:12px;font-size:16px;font-weight:bold;cursor:pointer;margin-bottom:12px}
+.btn:active{transform:scale(0.98)}
+.btn-p{background:linear-gradient(135deg,var(--p),#FF8E53);color:#fff}
+.btn-s{background:linear-gradient(135deg,var(--s),#44A08D);color:#fff}
+.btn-sm{padding:10px 15px;font-size:14px;width:auto;display:inline-block}
+.ig{margin-bottom:15px}
+.ig label{display:block;margin-bottom:8px;font-weight:500}
+.ig input,.ig select{width:100%;padding:12px 15px;border:2px solid #E9ECEF;border-radius:10px;font-size:16px}
+.ig input:focus{outline:none;border-color:var(--p)}
+.modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:1000;justify-content:center;align-items:center;padding:20px}
+.modal.active{display:flex}
+.modal-c{background:#fff;border-radius:20px;padding:25px;width:100%;max-width:400px;max-height:80vh;overflow-y:auto;animation:slideUp .3s}
+@keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.page{display:none}.page.active{display:block;animation:fadeIn .3s}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.logo{text-align:center;margin-bottom:30px}
+.logo .ic{width:80px;height:80px;background:linear-gradient(135deg,var(--p),var(--a));border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 15px;font-size:40px}
+.menu{display:grid;gap:15px}
+.menu-item{background:#fff;border-radius:16px;padding:20px;display:flex;align-items:center;gap:15px;box-shadow:0 4px 15px rgba(0,0,0,0.1);cursor:pointer}
+.menu-item:active{transform:scale(0.98)}
+.mi{width:50px;height:50px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px}
+.mi.battle{background:linear-gradient(135deg,#FF6B6B,#FF8E53)}
+.mi.practice{background:linear-gradient(135deg,#4ECDC4,#44A08D)}
+.mi.chat{background:linear-gradient(135deg,#A29BFE,#6C5CE7)}
+.mi.record{background:linear-gradient(135deg,#FFE66D,#F7DC6F)}
+.mi.rank{background:linear-gradient(135deg,#74B9FF,#0984E3)}
+.mi.admin{background:linear-gradient(135deg,#636E72,#2D3436)}
+.mt h3{font-size:16px;margin-bottom:3px}.mt p{font-size:12px;color:#868E96}
+.tabs{display:flex;background:#E9ECEF;border-radius:10px;padding:4px;margin-bottom:15px}
+.tab{flex:1;padding:10px;border:none;background:transparent;border-radius:8px;font-size:14px;cursor:pointer}
+.tab.active{background:#fff;box-shadow:0 2px 5px rgba(0,0,0,0.1)}
+.tb{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+.back-btn{background:none;border:none;font-size:24px;cursor:pointer;padding:5px}
+.plist{max-height:300px;overflow-y:auto}
+.pitem{display:flex;align-items:center;justify-content:space-between;padding:12px 15px;background:#F8F9FA;border-radius:10px;margin-bottom:10px}
+.pinfo{display:flex;align-items:center;gap:10px}
+.pav{width:40px;height:40px;background:linear-gradient(135deg,#74B9FF,#0984E3);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:bold}
+.pst{width:10px;height:10px;background:#51CF66;border-radius:50%}
+.bhdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+.binfo{text-align:center;flex:1}
+.bprog{background:#E9ECEF;border-radius:10px;height:8px;margin-top:10px;overflow:hidden}
+.bprog-bar{height:100%;background:linear-gradient(90deg,var(--ok),#20C997);border-radius:10px;transition:width .3s}
+.bplayers{display:flex;justify-content:space-between;margin-bottom:20px}
+.bplayer{text-align:center;flex:1}
+.bpav{width:50px;height:50px;border-radius:50%;margin:0 auto 8px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:bold;color:#fff}
+.bpav.red{background:linear-gradient(135deg,#FF6B6B,#FF8E53)}.bpav.blue{background:linear-gradient(135deg,#74B9FF,#0984E3)}
+.bscore{font-size:24px;font-weight:bold}
+.blabel{font-size:12px;color:#868E96}
+.qarea{background:#F8F9FA;border-radius:20px;padding:25px;text-align:center;margin-bottom:20px}
+.qtype{display:inline-block;padding:5px 15px;background:var(--p);color:#fff;border-radius:20px;font-size:12px;margin-bottom:15px}
+.abtn{width:100px;height:100px;border-radius:50%;background:linear-gradient(135deg,var(--p),#FF8E53);border:none;color:#fff;font-size:40px;cursor:pointer;margin:15px 0;box-shadow:0 5px 20px rgba(255,107,107,0.4)}
+.abtn:active{transform:scale(0.95)}
+.abtn.playing{animation:pulse 1s infinite}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
+.qtext{font-size:18px;font-weight:500;margin-bottom:20px}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:380px){.opts{grid-template-columns:1fr}}
+.opt{padding:15px;background:#fff;border:2px solid #E9ECEF;border-radius:12px;font-size:16px;cursor:pointer;text-align:center}
+.opt:active{transform:scale(0.98)}.opt.correct{border-color:var(--ok);background:#F8FFF9}
+.opt.wrong{border-color:var(--x);background:#FFF5F5}
+.ainput{display:flex;gap:10px;margin-top:15px}
+.ainput input{flex:1;padding:15px;border:2px solid #E9ECEF;border-radius:12px;font-size:18px;text-align:center}
+.ainput button{padding:15px 25px;background:var(--p);color:#fff;border:none;border-radius:12px;font-size:16px;cursor:pointer}
+.res{text-align:center;padding:30px 0}
+.ricon{width:100px;height:100px;border-radius:50%;margin:0 auto 20px;display:flex;align-items:center;justify-content:center;font-size:50px}
+.ricon.win{background:linear-gradient(135deg,#51CF66,#20C997)}.ricon.lose{background:linear-gradient(135deg,#FF6B6B,#FF8E53)}
+.ricon.draw{background:linear-gradient(135deg,#FFE66D,#F7DC6F)}
+.rtitle{font-size:28px;font-weight:bold;margin-bottom:10px}
+.rstats{display:flex;justify-content:center;gap:30px;margin:25px 0}
+.sitem{text-align:center}.sval{font-size:32px;font-weight:bold;color:var(--p)}.slbl{font-size:12px;color:#868E96}
+.rlist{max-height:400px;overflow-y:auto}
+.ritem{display:flex;align-items:center;padding:12px 15px;background:#F8F9FA;border-radius:12px;margin-bottom:10px}
+.ritem.top3{background:linear-gradient(135deg,#FFF5E6,#FFE4CC)}
+.rnum{width:30px;height:30px;border-radius:50%;background:#E9ECEF;display:flex;align-items:center;justify-content:center;font-weight:bold;margin-right:12px}
+.rnum.gold{background:linear-gradient(135deg,#FFD700,#FFA500);color:#fff}
+.rnum.silver{background:linear-gradient(135deg,#C0C0C0,#A8A8A8);color:#fff}
+.rnum.bronze{background:linear-gradient(135deg,#CD7F32,#B87333);color:#fff}
+.rinfo{flex:1}.rname{font-weight:500}.rclass{font-size:12px;color:#868E96}
+.rscore{text-align:right}.rwins{font-weight:bold;color:var(--p)}.rrate{font-size:12px;color:#868E96}
+.recitem{padding:15px;background:#F8F9FA;border-radius:12px;margin-bottom:10px}
+.rechdr{display:flex;justify-content:space-between;margin-bottom:8px}
+.recopp{font-weight:500}
+.recres{padding:3px 10px;border-radius:20px;font-size:12px}
+.recres.win{background:#E8F5E9;color:#2E7D32}.recres.lose{background:#FFEBEE;color:#C62828}.recres.draw{background:#FFF8E1;color:#F57F17}
+.recstats{display:flex;gap:20px;font-size:13px;color:#868E96}
+.roominfo{background:#F8F9FA;border-radius:12px;padding:15px;text-align:center;margin-bottom:15px}
+.rnum big{font-size:36px;font-weight:bold;color:var(--p);letter-spacing:5px}
+.cmsgs{height:250px;overflow-y:auto;background:#F8F9FA;border-radius:12px;padding:15px;margin-bottom:15px}
+.cmsg{margin-bottom:10px}.cmsg.system{text-align:center;color:#868E96;font-size:12px}.cmsg.user{text-align:right}
+.cmsg .nm{font-size:11px;color:#868E96;margin-bottom:3px}
+.cmsg .ct{display:inline-block;padding:8px 12px;border-radius:12px;max-width:80%}
+.cmsg.user .ct{background:var(--p);color:#fff}.cmsg.other .ct{background:#fff}
+.cact{display:flex;gap:10px;flex-wrap:wrap}
+.cabtn{padding:8px 15px;border:2px solid #E9ECEF;background:#fff;border-radius:20px;font-size:13px;cursor:pointer}
+.vitem{display:flex;align-items:center;justify-content:space-between;padding:15px;background:#F8F9FA;border-radius:12px;margin-bottom:10px}
+.vact{display:flex;gap:8px}
+.vbtn{padding:8px 15px;border:none;border-radius:8px;font-size:13px;cursor:pointer}
+.vbtn.pass{background:var(--ok);color:#fff}.vbtn.reject{background:var(--x);color:#fff}
+.ubadge{display:inline-flex;align-items:center;gap:8px;padding:8px 15px;background:#F8F9FA;border-radius:20px;font-size:13px}
+.ubadge .av{width:24px;height:24px;background:var(--p);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px}
+.div{height:1px;background:#E9ECEF;margin:20px 0}
+.notice{font-size:11px;color:#868E96;text-align:center;margin-top:20px;padding:15px;background:#F8F9FA;border-radius:10px}
+.admin-entry{position:fixed;bottom:20px;right:20px;width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,0.9);border:none;font-size:20px;cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,0.2);z-index:100}
+</style>
+</head>
+<body>
+<div class="c" id="app">
+<!-- 登录页 -->
+<div class="page active" id="page-login">
+<div class="card">
+<div class="logo"><div class="ic">&#x1F3A7;</div><h1>听音对战</h1><p>三年级英语对战游戏</p></div>
+
+<!-- 老师入口按钮 -->
+<div style="margin-top:20px;">
+<button class="btn btn-sm" onclick="showPage('teacher-login')" style="background:linear-gradient(135deg,#636E72,#2D3436);width:100%;">
+&#x1F468;&#x200D;&#x1F3EB; 老师入口
+</button>
+</div>
+
+<div class="tabs" id="login-tabs">
+<button class="tab active" data-tab="login-main" id="tab-login">学生登录</button>
+<button class="tab" data-tab="login-new" id="tab-reg">学生注册</button>
+</div>
+<div id="login-main">
+<div class="ig"><label>班级码</label><input type="text" id="login-class-code" placeholder="请输入班级码（如 CLASS01）" maxlength="20"></div>
+<div class="ig"><label>专属密码</label><input type="password" id="login-password" placeholder="请输入6位数字密码" maxlength="6"></div>
+<button class="btn btn-p" onclick="doLogin()">进入游戏</button>
+</div>
+<div id="login-new" style="display:none;">
+<div class="ig"><label>班级码</label><input type="text" id="reg-class-code" placeholder="请输入班级码" maxlength="20"></div>
+<div class="ig"><label>姓名</label><input type="text" id="reg-name" placeholder="请输入姓名"></div>
+<button class="btn btn-s" onclick="doRegister()">提交注册</button>
+</div>
+<div class="notice">&#x1F512; 所有数据云端同步<br>班级内实时对战学习</div>
+</div>
+</div>
+
+<!-- 老师登录页 -->
+<div class="page" id="page-teacher-login">
+<div class="card">
+<div class="logo"><div class="ic" style="background:linear-gradient(135deg,#636E72,#2D3436);">&#x1F510;</div><h1>老师入口</h1></div>
+
+<div class="tabs" id="teacher-tabs">
+<button class="tab active" data-tab="teacher-login-form">登录</button>
+<button class="tab" data-tab="teacher-reg-form">注册</button>
+</div>
+
+<div id="teacher-login-form">
+<div class="ig"><label>用户名</label><input type="text" id="teacher-login-name" placeholder="请输入用户名"></div>
+<div class="ig"><label>密码</label><input type="password" id="teacher-login-pwd" placeholder="请输入密码" maxlength="20"></div>
+<button class="btn btn-p" onclick="doTeacherLogin()">登录</button>
+</div>
+
+<div id="teacher-reg-form" style="display:none;">
+<div class="ig"><label>用户名</label><input type="text" id="teacher-reg-name" placeholder="请输入用户名（登录用）"></div>
+<div class="ig"><label>显示名称</label><input type="text" id="teacher-reg-display" placeholder="如：张老师"></div>
+<div class="ig"><label>密码</label><input type="password" id="teacher-reg-pwd" placeholder="请输入密码" maxlength="20"></div>
+<button class="btn btn-s" onclick="doTeacherRegister()">注册</button>
+</div>
+
+<button class="btn btn-sm" onclick="showPage('login')" style="width:100%;margin-top:15px;">返回学生登录</button>
+</div>
+</div>
+
+<!-- 班级管理列表页（老师） -->
+<div class="page" id="page-class-list">
+<div class="tb">
+<button class="back-btn" onclick="logout()">&#x2192;</button>
+<h2>我的班级</h2>
+<button class="btn btn-sm" onclick="showCreateClassModal()" style="background:var(--ok);color:#fff;border:none;border-radius:8px;padding:8px 15px;">+新建</button>
+</div>
+<div class="card">
+<div class="tabs" id="class-list-tabs">
+<button class="tab active" data-tab="my-classes">我的班级</button>
+<button class="tab" data-tab="pending-approval">待审核</button>
+</div>
+<div id="my-classes">
+<div id="class-list-container"></div>
+</div>
+<div id="pending-approval" style="display:none;">
+<div id="pending-list-container"></div>
+</div>
+</div>
+<button class="btn btn-sm" onclick="showPage('home')" style="width:100%;margin-top:10px;">返回首页</button>
+</div>
+
+<!-- 班级详情页 -->
+<div class="page" id="page-class-detail">
+<div class="tb">
+<button class="back-btn" onclick="showPage('class-list')">&#x2190;</button>
+<h2 id="class-detail-title">班级详情</h2>
+<button class="btn btn-sm" onclick="showChatPermissionModal()" style="background:var(--s);color:#fff;border:none;border-radius:8px;padding:8px 15px;">&#x1F4CB; 权限</button>
+</div>
+<div class="card" style="background:#E8F5E9;padding:15px;margin-bottom:10px;">
+<p style="color:#868E96;font-size:12px;margin:0;">班级码: <strong id="detail-class-code" style="color:var(--ok);"></strong></p>
+<p style="color:#868E96;font-size:12px;margin:5px 0 0 0;">学生数: <strong id="detail-student-count">0</strong></p>
+</div>
+<div class="card">
+<h4>&#x1F465; 本班学生 (<span id="class-students-count">0</span>)</h4>
+<div id="class-students-list" style="max-height:400px;overflow-y:auto;"></div>
+</div>
+</div>
+
+<!-- 班级群聊页 -->
+<div class="page" id="page-class-chat">
+<div class="tb">
+<button class="back-btn" onclick="leaveClassChat()">&#x2190;</button>
+<h2 id="chat-class-title">班级群聊</h2>
+<button class="btn btn-sm" id="auto-play-btn" onclick="toggleAutoPlay()" style="background:#E8F5E9;color:#2E7D32;border:none;border-radius:8px;padding:8px 15px;">&#x25B6;连播</button>
+</div>
+
+<!-- 群聊状态提示 -->
+<div id="chat-status-bar" class="card" style="background:#FFF3CD;padding:15px;margin-bottom:10px;display:none;">
+<p style="color:#856404;margin:0;text-align:center;" id="chat-status-text"></p>
+</div>
+
+<!-- 在线成员 -->
+<div class="card" style="background:#E8F5E9;padding:15px;margin-bottom:10px;">
+<p style="color:#868E96;font-size:12px;margin:0;">&#x1F465; 在线成员 (<span id="chat-online-count">0</span>)</p>
+<div id="chat-online-list" style="display:flex;flex-wrap:wrap;gap:5px;margin-top:8px;"></div>
+</div>
+
+<!-- 消息区域 -->
+<div class="card" style="padding:15px;margin-bottom:80px;">
+<div id="voice-messages" style="max-height:400px;overflow-y:auto;"></div>
+</div>
+
+<!-- 语音输入区域 -->
+<div id="voice-input-area">
+<div class="voice-controls" style="position:fixed;bottom:0;left:0;right:0;background:#fff;padding:15px;padding-bottom:max(15px, env(safe-area-inset-bottom));box-shadow:0 -2px 10px rgba(0,0,0,0.1);">
+<div style="display:flex;justify-content:center;align-items:center;gap:20px;">
+<div style="text-align:center;">
+<button class="abtn" id="voice-record-btn" ontouchstart="startRecording(event)" ontouchend="stopRecording(event)" onmousedown="startRecording(event)" onmouseup="stopRecording(event)">&#x1F3A4;</button>
+<p style="font-size:12px;color:#868E96;margin:5px 0 0 0;">按住说话</p>
+<p style="font-size:10px;color:#adb5bd;margin:0;" id="record-tip">上滑取消</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- 首页 -->
+<div class="page" id="page-home">
+<div class="hdr"><h1>&#x1F3A7; 听音对战</h1><p>三年级英语对战游戏</p></div>
+<div class="tb">
+<div class="ubadge">
+<div class="av" id="user-avatar">龙</div>
+<div>
+<div id="user-name">张三</div>
+<div id="user-class" style="font-size:11px;color:#868E96;display:none;"></div>
+</div>
+</div>
+<button class="btn-sm btn-s" onclick="logout()">退出</button>
+</div>
+<div class="menu">
+<div class="menu-item" onclick="showPage('battle')"><div class="mi battle">&#x2694;</div><div class="mt"><h3>对战竞技</h3><p>与同学一决高下</p></div></div>
+<div class="menu-item" onclick="showPage('practice')"><div class="mi practice">&#x1F4D6;</div><div class="mt"><h3>听力练习</h3><p>提升听力能力</p></div></div>
+<div class="menu-item" onclick="showPage('room')"><div class="mi chat">&#x1F4AC;</div><div class="mt"><h3>对话房间</h3><p>英语口语对话</p></div></div>
+<div class="menu-item" onclick="showPage('class-chat')" id="menu-class-chat"><div class="mi" style="background:linear-gradient(135deg,#A29BFE,#6C5CE7)">&#x1F4AC;</div><div class="mt"><h3>班级群聊</h3><p>和同学语音交流</p></div></div>
+<div class="menu-item" onclick="showPage('record')"><div class="mi record">&#x1F4CA;</div><div class="mt"><h3>对战记录</h3><p>查看历史战绩</p></div></div>
+<div class="menu-item" onclick="showPage('rank')"><div class="mi rank">&#x1F3C6;</div><div class="mt"><h3>班级排名</h3><p>谁是英语王者</p></div></div>
+</div>
+<!-- 老师入口（隐藏式，点击右下角） -->
+<button class="admin-entry" onclick="showPage('teacher-login')" id="teacher-entry-btn" style="display:none;">&#x1F468;&#x200D;&#x1F3EB;</button>
+</div>
+
+<!-- 对战池 -->
+<div class="page" id="page-battle">
+<div class="tb"><button class="back-btn" onclick="showPage('home')">&#x2190;</button><h2>对战竞技</h2><div style="width:40px;"></div></div>
+<!-- 年级选择（对战用） -->
+<div class="card" style="background:#FFF3E0;padding:15px;">
+<div class="ig" style="margin-bottom:0;"><label>&#x1F3C6; 对战年级</label><select id="battle-grade-select" onchange="onBattleGradeChange()" style="font-weight:bold;color:#E65100;"><option value="3">三年级</option></select></div>
+<div id="battle-grade-info" style="font-size:12px;color:#E65100;margin-top:8px;"></div>
+</div>
+<div class="card"><h3 style="margin-bottom:15px;">&#x1F3E0; 对战池</h3><p style="color:#868E96;font-size:13px;margin-bottom:15px;">当前在线的同学，点击发起挑战</p><div class="plist" id="player-list"></div></div>
+<button class="btn btn-s" onclick="startBotBattle()" style="margin-top:10px;">&#x1F916; 与AI对战</button>
+</div>
+
+<!-- 对战中 -->
+<div class="page" id="page-battling">
+<div class="bhdr"><button class="back-btn" onclick="quitBattle()">&#x2190;</button><div class="binfo"><div>第 <span id="q-num">1</span> / 15 题</div><div class="bprog"><div class="bprog-bar" id="q-progress" style="width:6.67%"></div></div></div><div style="width:40px;"></div></div>
+<div class="bplayers">
+<div class="bplayer"><div class="bpav red" id="p1av">你</div><div class="blabel" id="p1name">你</div><div class="bscore" id="p1score">0</div></div>
+<div style="align-self:center;font-size:24px;">VS</div>
+<div class="bplayer"><div class="bpav blue" id="p2av">AI</div><div class="blabel" id="p2name">AI对手</div><div class="bscore" id="p2score">0</div></div>
+</div>
+<div class="qarea"><span class="qtype" id="q-type">听力题</span>
+<div><button class="abtn" id="audio-btn" onclick="playAudio()">&#x1F50A;</button><p style="color:#868E96;font-size:12px;">点击播放听力</p></div>
+<div class="qtext" id="q-text">正在加载题目...</div>
+<div class="opts" id="q-opts"></div>
+<div class="ainput" id="q-input" style="display:none;"><input type="text" id="spell-answer" placeholder="请输入英语单词" autocomplete="off"><button onclick="submitSpell()">确定</button></div>
+</div>
+</div>
+
+<!-- 对战结果 -->
+<div class="page" id="page-result">
+<div class="card"><div class="res">
+<div class="ricon" id="result-icon">&#x1F3C6;</div><div class="rtitle" id="result-title">你赢了！</div>
+<p id="result-sub" style="color:#868E96;">太棒了，继续加油！</p>
+<div class="rstats"><div class="sitem"><div class="sval" id="result-correct">10</div><div class="slbl">正确题数</div></div><div class="sitem"><div class="sval" id="result-rate">67%</div><div class="slbl">正确率</div></div></div>
+<button class="btn btn-p" onclick="showPage('battle')">再来一局</button>
+<button class="btn btn-s" onclick="showPage('home')">返回首页</button>
+</div></div>
+</div>
+
+<!-- 听力练习 -->
+<div class="page" id="page-practice">
+<div class="tb"><button class="back-btn" onclick="showPage('home')">&#x2190;</button><h2>听力练习</h2><div style="width:40px;"></div></div>
+<div class="card">
+<div class="tabs" id="practice-tabs">
+<button class="tab active" data-tab="prac-unit" onclick="switchPracticeTab('prac-unit')">单元练习</button>
+<button class="tab" data-tab="prac-random" onclick="switchPracticeTab('prac-random')">随机练习</button>
+</div>
+<div id="prac-unit">
+<!-- 年级选择 -->
+<div class="ig"><label>&#x1F393; 选择年级</label><select id="select-grade" onchange="onGradeChange()"><option value="3">三年级</option></select></div>
+<!-- 册数选择 -->
+<div class="ig"><label>&#x1F4D6; 选择册数</label><select id="select-book" onchange="onBookChange()"><option value="down">下册</option></select></div>
+<!-- 单元选择 -->
+<div class="ig"><label>&#x1F4CB; 选择单元</label><select id="select-unit"></select></div>
+<div class="ig"><label>&#x1F4CA; 题目数量</label><select id="practice-count"><option value="10">10题</option><option value="15">15题</option><option value="20">20题</option></select></div>
+<div id="bank-info" style="background:#E8F5E9;padding:10px 15px;border-radius:10px;margin-bottom:15px;font-size:13px;color:#2E7D32;"></div>
+<button class="btn btn-p" onclick="startPractice()">开始练习</button>
+</div>
+<div id="prac-random" style="display:none;">
+<div class="ig"><label>&#x1F393; 选择年级</label><select id="select-grade-random" onchange="onGradeChangeRandom()"><option value="3">三年级</option></select></div>
+<div class="ig"><label>&#x1F4D6; 选择册数</label><select id="select-book-random" onchange="renderUnitSelectRandom()"><option value="down">下册</option></select></div>
+<div id="bank-info-random" style="background:#E8F5E9;padding:10px 15px;border-radius:10px;margin-bottom:15px;font-size:13px;color:#2E7D32;"></div>
+<p style="color:#868E96;text-align:center;padding:15px;">将从全部题库中随机抽取</p><button class="btn btn-p" onclick="startRandomPractice()">开始随机练习</button></div>
+</div>
+</div>
+
+<!-- 练习中 -->
+<div class="page" id="page-practicing">
+<div class="tb"><button class="back-btn" onclick="showPage('practice')">&#x2190;</button><div>第 <span id="prac-num">1</span> / <span id="prac-total">10</span> 题</div><div style="width:40px;"></div></div>
+<div class="card"><span class="qtype" id="prac-type">听力题</span>
+<div style="text-align:center;"><button class="abtn" onclick="playPracticeAudio()">&#x1F50A;</button><p style="color:#868E96;font-size:12px;">点击播放听力</p></div>
+<div class="qtext" id="prac-text">正在加载...</div>
+<div class="opts" id="prac-opts"></div>
+<div class="ainput" id="prac-input" style="display:none;"><input type="text" id="prac-spell-answer" placeholder="请输入英语单词"><button onclick="submitPracSpell()">确定</button></div>
+</div>
+<div class="card" style="background:#E8F5E9;"><div style="display:flex;justify-content:space-between;"><span>正确: <strong id="prac-correct">0</strong></span><span>错误: <strong id="prac-wrong">0</strong></span></div></div>
+</div>
+
+<!-- 对话房间 -->
+<div class="page" id="page-room">
+<div class="tb"><button class="back-btn" onclick="showPage('home')">&#x2190;</button><h2>对话房间</h2><div style="width:40px;"></div></div>
+<div class="card">
+<div class="tabs" id="room-tabs">
+<button class="tab active" data-tab="room-create" onclick="switchRoomTab('room-create')">创建房间</button>
+<button class="tab" data-tab="room-join" onclick="switchRoomTab('room-join')">加入房间</button>
+<button class="tab" data-tab="room-observe" onclick="switchRoomTab('room-observe')">观摩房间</button>
+</div>
+<div id="room-create"><p style="color:#868E96;font-size:13px;margin-bottom:15px;">创建一个房间，邀请同学加入，一起练习英语对话！</p><button class="btn btn-p" onclick="createRoom()">创建房间</button></div>
+<div id="room-join" style="display:none;"><div class="ig"><label>房间号</label><input type="text" id="join-room-code" placeholder="请输入房间号" maxlength="6"></div><button class="btn btn-p" onclick="joinRoom()">加入</button></div>
+<div id="room-observe" style="display:none;"><p style="color:#868E96;font-size:13px;margin-bottom:15px;">观摩他人对话，可看聊天记录和播放语音，但不能发言</p><div class="ig"><label>房间号</label><input type="text" id="observe-room-code" placeholder="请输入要观摩的房间号" maxlength="6"></div><button class="btn btn-p" onclick="observeRoom()">开始观摩</button></div>
+</div>
+</div>
+
+<!-- 房间内 -->
+<div class="page" id="page-room-in">
+<div class="tb"><button class="back-btn" onclick="leaveRoom()">&#x2190;</button><h2 id="room-title">对话中</h2><button class="btn-sm" onclick="closeRoom()" style="background:#FF6B6B;color:#fff;border:none;border-radius:8px;padding:8px 15px;cursor:pointer;">关闭</button></div>
+<div class="roominfo"><p style="color:#868E96;font-size:12px;">房间号</p><big class="roomnum big" id="current-room-code">1001</big></div>
+<div class="card" style="background:#E8F5E9;padding:10px 15px;margin-bottom:10px;">
+<p style="color:#868E96;font-size:12px;margin:0;">&#x1F465; 房间成员</p>
+<div id="room-members" style="display:flex;flex-wrap:wrap;gap:5px;margin-top:5px;"></div>
+<p id="observe-tip" style="color:#FF9800;font-size:11px;margin:5px 0 0 0;display:none;">&#x1F4FA; 您是观摩者，只能看和听，不能发言</p>
+</div>
+<div class="card"><h4>&#x1F4AC; 聊天 <button class="btn btn-sm" id="play-chat-btn" onclick="playChatMessages()" style="background:#9B59B6;color:#fff;border:none;border-radius:5px;padding:5px 10px;cursor:pointer;font-size:12px;margin-left:10px;">&#x1F50A; 播放语音</button></h4>
+<div class="cmsgs" id="chat-messages"><div class="cmsg system">欢迎来到对话房间，请使用英语交流！</div></div>
+<div id="chat-input-area">
+<div class="cact"><button class="cabtn" onclick="sendEmoji('&#x1F4AA;')">&#x1F4AA;</button><button class="cabtn" onclick="sendEmoji('&#x1F339;')">&#x1F339;</button><button class="cabtn" onclick="sendEmoji('&#x1F44D;')">&#x1F44D;</button><button class="cabtn" onclick="sendEmoji('&#x1F389;')">&#x1F389;</button></div>
+<div class="div"></div>
+<div class="ig"><label>&#x1F3A4; 英语语音识别</label><button class="btn btn-s" id="mic-btn" onclick="toggleMic()">&#x1F3A4; 开始识别</button><p style="font-size:11px;color:#868E96;margin-top:5px;">说话自动识别英语，中文会被警告</p></div>
+<div id="warning-area"></div>
+</div>
+</div>
+</div>
+
+<!-- 对战记录 -->
+<div class="page" id="page-record">
+<div class="tb"><button class="back-btn" onclick="showPage('home')">&#x2190;</button><h2>对战记录</h2><div style="width:40px;"></div></div>
+<div class="card"><div class="rlist" id="record-list"></div></div>
+</div>
+
+<!-- 班级排名 -->
+<div class="page" id="page-rank">
+<div class="tb"><button class="back-btn" onclick="showPage('home')">&#x2190;</button><h2>班级排名</h2><div style="width:40px;"></div></div>
+<div class="card"><div class="rlist" id="rank-list"></div></div>
+</div>
+
+<!-- 老师后台 -->
+<div class="page" id="page-admin">
+<div class="tb"><button class="back-btn" onclick="showPage('home')">&#x2190;</button><h2>老师后台</h2><div style="width:40px;"></div></div>
+
+<!-- 题库管理模块 -->
+<div class="card" style="background:#E3F2FD;">
+<h3 style="margin-bottom:15px;color:#1565C0;">&#x1F4DA; 题库管理</h3>
+
+<!-- 年级筛选 -->
+<div class="ig"><label>&#x1F393; 年级管理</label>
+<select id="admin-grade-select" onchange="onAdminGradeChange()"></select>
+</div>
+
+<!-- 册数筛选 -->
+<div class="ig"><label>&#x1F4D6; 册数管理</label>
+<select id="admin-book-select" onchange="onAdminBookChange()"></select>
+</div>
+
+<!-- 年级/册数启用控制 -->
+<div style="display:flex;gap:10px;margin-bottom:15px;">
+<button class="btn btn-s" onclick="toggleGradeEnabled()" id="toggle-grade-btn" style="flex:1;">启用年级</button>
+<button class="btn btn-s" onclick="toggleBookEnabled()" id="toggle-book-btn" style="flex:1;">启用册数</button>
+</div>
+
+<!-- 单元列表 -->
+<div id="admin-unit-list" style="margin-top:15px;"></div>
+</div>
+
+<!-- 学生管理模块 -->
+<div class="card"><h3 style="margin-bottom:15px;">&#x2699; 管理设置</h3>
+<div class="ig"><label>修改动态指令</label><input type="text" id="new-dynamic-code" placeholder="输入新指令"><button class="btn btn-s btn-sm" onclick="updateDynamicCode()" style="margin-top:10px;">保存</button></div>
+<div class="div"></div>
+<h4 style="margin-bottom:10px;">&#x1F465; 待审核 (<span id="pending-count">0</span>)</h4>
+<div id="pending-list"></div>
+<div class="div"></div>
+<h4 style="margin-bottom:10px;">&#x1F3AB; 已注册学生 (<span id="verified-count">0</span>)</h4>
+<div id="verified-list"></div>
+</div>
+</div>
+
+<!-- 老师登录 -->
+<div class="page" id="page-admin-login">
+<div class="card"><div class="logo"><div class="ic" style="background:linear-gradient(135deg,#636E72,#2D3436);">&#x1F510;</div><h1>老师入口</h1></div>
+<div class="ig"><label>管理密码</label><input type="password" id="admin-password" placeholder="请输入管理密码" maxlength="6"></div>
+<button class="btn btn-p" onclick="adminLogin()">进入后台</button>
+<button class="btn btn-s" onclick="showPage('login')" style="margin-top:10px;">返回登录</button>
+</div>
+</div>
+</div>
+
+<button class="admin-entry" onclick="showPage('admin-login')">&#x1F468;&#x200D;&#x1F3EB;</button>
+<div class="modal" id="modal-feedback"><div class="modal-c"><div style="text-align:center;"><div style="font-size:60px;margin-bottom:15px;" id="feedback-icon">&#x2713;</div><h3 id="feedback-text" style="margin-bottom:10px;">回答正确！</h3><p id="feedback-answer" style="color:#868E96;"></p></div></div></div>
+
+<script>
+// ============ WebSocket客户端（支持云端部署）============
+var WS = {
+    ws: null,
+    connected: false,
+    clientId: null,
+    name: '',
+    room: null,
+    reconnectTimer: null,
+    useFallback: false,  // 是否使用localStorage后备方案
+    
+    // ============ API配置 - 部署时修改这里 ============
+    // 本地开发: 'http://localhost:8080' 或 'ws://localhost:8080'
+    // 云端部署: 'https://你的域名.workers.dev' 或 'wss://你的域名.workers.dev'
+    getApiUrl: function() {
+        // 使用配置的云端 API 地址
+        if (S.API_URL) return S.API_URL;
+        return location.protocol + '//' + location.host;
+    },
+    getWsUrl: function() {
+        // 优先使用配置的SCF WebSocket地址
+        if (S.SCF_WS_URL) {
+            console.log('[WebSocket] 使用腾讯云SCF地址:', S.SCF_WS_URL);
+            return S.SCF_WS_URL;
+        }
+        // 使用云端后端 Workers 地址
+        if (S.API_URL) {
+            var wsProtocol = S.API_URL.startsWith('https:') ? 'wss:' : 'ws:';
+            var host = S.API_URL.replace(/^https?:\/\//, '');
+            return wsProtocol + '//' + host + '/ws';
+        }
+        // 本地开发模式
+        var host = location.host;
+        if (location.protocol === 'https:') {
+            return 'wss://' + host + '/ws';
+        } else {
+            return 'ws://' + host + '/ws';
+        }
+    },
+    
+    // 连接到WebSocket服务器
+    connect: function() {
+        var self = this;
+        
+        // 检测是否在localhost或云端环境
+        var isLocal = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+        
+        if (!isLocal && location.protocol === 'https:') {
+            console.log('[WebSocket] HTTPS环境，将使用云端WebSocket');
+        }
+        
+        try {
+            var wsUrl = self.getWsUrl();
+            console.log('[WebSocket] 正在连接:', wsUrl);
+            
+            self.ws = new WebSocket(wsUrl);
+            
+            self.ws.onopen = function() {
+                console.log('[WebSocket] 已连接到服务器');
+                self.connected = true;
+                self.useFallback = false;
+                
+                // 注册客户端（携带当前登录用户信息）
+                self.send({
+                    type: 'register',
+                    name: S.currentUser ? S.currentUser.name : '我',
+                    isTeacher: S.currentUser && S.currentUser.isTeacher
+                });
+            };
+            
+            self.ws.onmessage = function(event) {
+                self.handleMessage(event.data);
+            };
+            
+            self.ws.onclose = function() {
+                console.log('[WebSocket] 连接已断开');
+                self.connected = false;
+                
+                // 尝试重连（云端环境最多重连3次）
+                if (!self.useFallback && self.reconnectCount < 3) {
+                    self.reconnectCount = (self.reconnectCount || 0) + 1;
+                    console.log('[WebSocket] ' + (4 - self.reconnectCount) + '秒后尝试重连...');
+                    clearTimeout(self.reconnectTimer);
+                    self.reconnectTimer = setTimeout(function() {
+                        self.connect();
+                    }, 3000);
+                } else {
+                    self.useFallback = true;
+                    console.log('[WebSocket] 使用本地模式');
+                }
+            };
+            
+            self.ws.onerror = function(err) {
+                console.error('[WebSocket] 连接错误:', err);
+                self.connected = false;
+                self.useFallback = true;
+                toast('无法连接到服务器，使用本地模式');
+            };
+        } catch (e) {
+            console.error('[WebSocket] 创建连接失败:', e);
+            self.useFallback = true;
+        }
+    },
+    reconnectCount: 0,
+    
+    // 发送消息
+    send: function(data) {
+        if (this.ws && this.connected) {
+            this.ws.send(JSON.stringify(data));
+        }
+    },
+    
+    // 处理收到的消息
+    handleMessage: function(data) {
+        try {
+            var msg = JSON.parse(data);
+            console.log('[WebSocket] 收到消息:', msg.type);
+            
+            switch (msg.type) {
+                case 'registered':
+                    this.clientId = msg.clientId;
+                    console.log('[WebSocket] 注册成功:', this.clientId);
+                    WS.send({type: 'loadData'});
+                    break;
+                    
+                // ===== 数据加载 =====
+                case 'dataLoaded':
+                    if (msg.data) {
+                        S.classes = msg.data.classes || [];
+                        S.pendingStudents = msg.data.pendingStudents || [];
+                        S.students = msg.data.students || [];
+                        S.battleHistory = msg.data.battleHistory || [];
+                        S.dynamicCode = msg.data.dynamicCode || 'ABC123';
+                        S.isTeacher = msg.data.isTeacher || false;
+                        
+                        if (msg.data.teacherClasses) {
+                            S.classes = msg.data.teacherClasses;
+                        }
+                        
+                        if (msg.data.onlineUsers) {
+                            S.allOnlineUsers = msg.data.onlineUsers || [];
+                            // 根据当前用户班级过滤在线用户
+                            if (S.currentUser && S.currentUser.classCode) {
+                                S.onlineUsers = S.allOnlineUsers.filter(function(u) {
+                                    return u.classCode === S.currentUser.classCode;
+                                });
+                            } else {
+                                S.onlineUsers = S.allOnlineUsers;
+                            }
+                        }
+                        
+                        // 重新登录验证当前用户
+                        if (S.currentUser && S.currentUser.password) {
+                            var serverUser = S.students.find(function(u){ return u.name === S.currentUser.name; });
+                            if (serverUser) {
+                                S.currentUser.wins = serverUser.wins;
+                                S.currentUser.games = serverUser.games;
+                                S.currentUser.classCode = serverUser.classCode;
+                                S.currentUser.className = serverUser.className;
+                            }
+                        }
+                        
+                        saveData();
+                        refreshCurrentPage();
+                        toast('数据已同步！');
+                    }
+                    break;
+                    
+                // ===== 老师相关 =====
+                case 'teacherLoginResult':
+                    if (msg.success) {
+                        S.isTeacher = true;
+                        S.teacherInfo = msg.teacher;
+                        S.classes = msg.teacher.classes || [];
+                        showPage('class-list');
+                        toast('老师登录成功！');
+                    } else {
+                        toast(msg.error || '登录失败');
+                    }
+                    break;
+                    
+                case 'teacherRegisterResult':
+                    if (msg.success) {
+                        S.isTeacher = true;
+                        S.teacherInfo = msg.teacher;
+                        S.classes = msg.teacher.classes || [];
+                        alert('注册成功！');
+                        showPage('class-list');
+                    } else {
+                        toast(msg.error || '注册失败');
+                    }
+                    break;
+                    
+                case 'teachersUpdate':
+                    // 老师列表更新
+                    break;
+                    
+                case 'classesUpdate':
+                    S.classes = msg.classes || [];
+                    if (typeof renderClassList === 'function') renderClassList();
+                    break;
+                    
+                // ===== 学生相关 =====
+                case 'loginResult':
+                    if (msg.success) {
+                        S.currentUser = msg.student;
+                        S.isTeacher = false;
+                        document.getElementById('user-name').textContent = msg.student.name;
+                        document.getElementById('user-avatar').textContent = msg.student.name.charAt(0);
+                        // 显示班级信息
+                        if (msg.student.className) {
+                            document.getElementById('user-class').textContent = msg.student.className;
+                            document.getElementById('user-class').style.display = '';
+                        }
+                        saveData();
+                        showPage('home');
+                        document.getElementById('login-password').value = '';
+                        document.getElementById('login-code').value = '';
+                        toast('登录成功！');
+                    } else {
+                        toast(msg.error || '登录失败');
+                    }
+                    break;
+                    
+                case 'registerResult':
+                    if (msg.success) {
+                        alert('注册已提交！\n请等待老师审核通过后，用密码登录游戏。');
+                        document.getElementById('reg-name').value = '';
+                        document.getElementById('reg-class-code').value = '';
+                    } else {
+                        alert(msg.error || '注册失败');
+                    }
+                    break;
+                    
+                // ===== 审核相关 =====
+                case 'pendingStudentsUpdate':
+                    S.pendingStudents = msg.pending || [];
+                    saveData();
+                    if (typeof renderPendingList === 'function') renderPendingList();
+                    break;
+                    
+                case 'approveStudent':
+                    if (S.currentUser && S.currentUser.name === msg.name) {
+                        alert('🎉 审核通过！\n你的密码是：' + msg.password + '\n请记住密码！');
+                    }
+                    // 移除待审核
+                    var idx = S.pendingStudents.findIndex(function(p){ return p.name === msg.name; });
+                    if (idx !== -1) {
+                        S.pendingStudents.splice(idx, 1);
+                    }
+                    saveData();
+                    if (typeof renderPendingList === 'function') renderPendingList();
+                    break;
+                    
+                case 'rejectStudent':
+                    if (S.currentUser && S.currentUser.name === msg.name) {
+                        alert('抱歉，您的注册申请已被拒绝。');
+                    }
+                    var idx2 = S.pendingStudents.findIndex(function(p){ return p.name === msg.name; });
+                    if (idx2 !== -1) {
+                        S.pendingStudents.splice(idx2, 1);
+                    }
+                    saveData();
+                    if (typeof renderPendingList === 'function') renderPendingList();
+                    break;
+                    
+                case 'passwordReset':
+                    if (S.currentUser && S.currentUser.name === msg.name) {
+                        alert('您的密码已被重置！\n新密码：' + msg.newPassword);
+                    }
+                    break;
+                    
+                case 'banned':
+                    if (S.currentUser) {
+                        alert('您的账号已被封禁！');
+                        logout();
+                    }
+                    break;
+                    
+                // ===== 学生列表更新 =====
+                case 'studentsUpdate':
+                    if (msg.classCode) {
+                        // 班级学生更新
+                        S.students = msg.students || [];
+                    }
+                    saveData();
+                    if (typeof renderStudentList === 'function') renderStudentList();
+                    if (typeof renderRankList === 'function') renderRankList();
+                    if (typeof renderPlayerList === 'function') renderPlayerList();
+                    break;
+                    
+                // ===== 房间相关 =====
+                case 'roomCreated':
+                    S.currentRoom = { 
+                        code: msg.roomCode, 
+                        users: msg.members.map(function(m){ return m.name; }),
+                        isObserver: false
+                    };
+                    document.getElementById('current-room-code').textContent = msg.roomCode;
+                    document.getElementById('room-title').textContent = '对话中';
+                    updateRoomMembers();
+                    setRoomMode(false);
+                    toast('房间已创建: ' + msg.roomCode);
+                    break;
+                    
+                case 'roomJoined':
+                    S.currentRoom = {
+                        code: msg.roomCode,
+                        users: msg.members.map(function(m){ return m.name; }),
+                        isObserver: msg.isObserver
+                    };
+                    document.getElementById('current-room-code').textContent = msg.roomCode;
+                    document.getElementById('room-title').textContent = msg.isObserver ? '观摩中' : '对话中';
+                    updateRoomMembers();
+                    setRoomMode(msg.isObserver);
+                    toast('已加入房间: ' + msg.roomCode);
+                    
+                    if (msg.chatHistory && msg.chatHistory.length > 0) {
+                        document.getElementById('chat-messages').innerHTML = '';
+                        msg.chatHistory.forEach(function(h) {
+                            addChatMessage('other', h.content, h.senderName);
+                        });
+                    }
+                    addChatMessage('system', '你加入了房间 ' + msg.roomCode);
+                    break;
+                    
+                case 'memberJoined':
+                    if (S.currentRoom) {
+                        S.currentRoom.users = msg.members.map(function(m){ return m.name; });
+                        updateRoomMembers();
+                        addChatMessage('system', msg.memberName + ' 加入了房间');
+                    }
+                    break;
+                    
+                case 'memberLeft':
+                    if (S.currentRoom) {
+                        S.currentRoom.users = msg.members.map(function(m){ return m.name; });
+                        updateRoomMembers();
+                        addChatMessage('system', msg.memberName + ' 离开了房间');
+                    }
+                    break;
+                    
+                case 'leftRoom':
+                    S.currentRoom = null;
+                    showPage('room');
+                    toast('已离开房间');
+                    break;
+                    
+                case 'chat':
+                    if (msg.senderId !== this.clientId) {
+                        addChatMessage('other', msg.content, msg.senderName || '其他同学');
+                    } else if (msg.isOwn === false) {
+                        addChatMessage('other', msg.content, msg.senderName);
+                    }
+                    break;
+                    
+                // ===== 班级群聊 =====
+                case 'classChatJoined':
+                    S.inClassChat = true;
+                    S.classChatHistory = msg.history || [];
+                    S.currentClass = {
+                        code: msg.classCode,
+                        name: msg.className,
+                        permission: msg.permission
+                    };
+                    if (typeof renderClassChat === 'function') {
+                        renderClassChat();
+                    }
+                    toast('已加入班级群聊');
+                    break;
+                    
+                case 'classChatLeft':
+                    S.inClassChat = false;
+                    S.classChatHistory = [];
+                    S.currentClass = null;
+                    showPage('home');
+                    break;
+                    
+                case 'classChatHistory':
+                    S.classChatHistory = msg.history || [];
+                    if (typeof renderClassChat === 'function') {
+                        renderClassChat();
+                    }
+                    break;
+                    
+                case 'voiceMessage':
+                    S.classChatHistory.push(msg.message);
+                    if (typeof addVoiceMessage === 'function') {
+                        addVoiceMessage(msg.message);
+                    }
+                    // 自动连播
+                    if (S.autoPlayEnabled && msg.message.senderId !== this.clientId) {
+                        S.voiceQueue.push(msg.message);
+                        if (S.voiceQueue.length === 1) {
+                            playNextVoice();
+                        }
+                    }
+                    break;
+                    
+                case 'classChatStatus':
+                    if (S.currentClass) {
+                        S.currentClass.permission = msg.permission;
+                    }
+                    if (typeof updateChatStatus === 'function') {
+                        updateChatStatus(msg.allowed, msg.message);
+                    }
+                    break;
+                    
+                case 'classChatError':
+                    toast(msg.error || '群聊错误');
+                    break;
+                    
+                // ===== 在线用户 =====
+                case 'onlineUsersUpdate':
+                    S.allOnlineUsers = msg.users || [];
+                    if (S.currentUser && S.currentUser.classCode) {
+                        S.onlineUsers = S.allOnlineUsers.filter(function(u) {
+                            return u.classCode === S.currentUser.classCode;
+                        });
+                    } else {
+                        S.onlineUsers = S.allOnlineUsers;
+                    }
+                    saveData();
+                    if (typeof renderPlayerList === 'function') renderPlayerList();
+                    if (typeof renderOnlineMembers === 'function') renderOnlineMembers();
+                    break;
+                    
+                // ===== 对战历史 =====
+                case 'battleHistoryUpdate':
+                    S.battleHistory = msg.history || [];
+                    saveData();
+                    if (typeof renderRecordList === 'function') renderRecordList();
+                    break;
+                    
+                // ===== 动态口令 =====
+                case 'dynamicCodeUpdate':
+                    S.dynamicCode = msg.code || 'ABC123';
+                    saveData();
+                    break;
+                    
+                // ===== 错误处理 =====
+                case 'error':
+                    toast('错误: ' + msg.message);
+                    break;
+                    
+                case 'serverClosing':
+                    toast('服务器正在关闭...');
+                    break;
+            }
+        } catch (e) {
+            console.error('[WebSocket] 消息处理错误:', e);
+        }
+    }
+};
+
+// 页面加载时尝试连接WebSocket
+setTimeout(function() {
+    WS.connect();
+}, 500);
+
+// ============ 全局状态 ============
+var S = {
+    // 用户相关
+    currentUser: null,           // {id, name, password, classCode, className, wins, games}
+    isTeacher: false,            // 是否是老师
+    teacherInfo: null,           // 老师信息 {id, username, displayName, classes}
+    
+    // 班级系统
+    classes: [],                // 班级列表
+    currentClass: null,         // 当前所在班级
+    pendingStudents: [],         // 待审核学生
+    students: [],                // 本班学生列表
+    
+    // 游戏
+    dynamicCode: 'ABC123',
+    battleHistory: [],
+    onlineUsers: [],            // 在线用户列表（过滤后的）
+    allOnlineUsers: [],         // 全部在线用户
+    
+    // 对战状态
+    currentQuestion: null,
+    battleProgress: {player: 0, opponent: 0, index: 0},
+    currentRoom: null,
+    micActive: false,
+    warningCount: 0,
+    
+    // 练习
+    practiceMode: false,
+    practiceQuestions: [],
+    practiceIndex: 0,
+    practiceCorrect: 0,
+    practiceWrong: 0,
+    
+    // 班级群聊
+    inClassChat: false,
+    classChatHistory: [],
+    autoPlayEnabled: false,
+    voiceQueue: [],
+    isRecording: false,
+    mediaRecorder: null,
+    
+    isBotBattle: false,
+    
+    // ============ API地址配置 ============
+    // 阿里云函数计算 WebSocket 地址
+    SCF_WS_URL: 'wss://tingyin-battle-dvbmrjgqto.cn-hangzhou.fcapp.run',
+    
+    // API
+    getApiBase: function() {
+        if (this.API_URL) return this.API_URL;
+        return location.protocol + '//' + location.host;
+    }
+};
+
+// ============ 多年级题库系统 v2.0 ============
+// 层级结构：年级 → 册数(上册/下册) → 单元 → 题型 → 题目
+// 支持 3-6 年级，预留空间，后期直接导入题库即可启用
+
+var QUESTION_BANK = {
+    "3": {
+        name: "三年级",
+        enabled: true,
+        books: {
+            "up": {
+                name: "三年级上册",
+                enabled: true,
+                units: {
+                    "unit1": {
+                        name: "Unit 1 Hello!",
+                        enabled: true,
+                        questions: [
+                            {t:'lw',e:'hello',c:'你好',o:['你好','再见','谢谢'],a:'hello'},
+                            {t:'lw',e:'hi',c:'嗨',o:['你好','嗨','再见'],a:'hi'},
+                            {t:'lw',e:'goodbye',c:'再见',o:['你好','再见','谢谢'],a:'goodbye'},
+                            {t:'lw',e:'morning',c:'早上',o:['早上','下午','晚上'],a:'morning'},
+                            {t:'lw',e:'I',c:'我',o:['我','你','他'],a:'I'},
+                            {t:'lw',e:'am',c:'是',o:['是','有','的'],a:'am'},
+                            {t:'ls',e:'Hello!',c:'你好！',o:['你好！','再见！','谢谢！'],a:'Hello!'},
+                            {t:'ls',e:'Goodbye!',c:'再见！',o:['你好！','再见！','好的！'],a:'Goodbye!'},
+                            {t:'ls',e:'Good morning!',c:'早上好！',o:['早上好！','下午好！','晚上好！'],a:'Good morning!'},
+                            {t:'ls',e:'I am Wu Yifan.',c:'我是吴一凡。',o:['我是吴一凡。','我是学生。','我很好。'],a:'I am Wu Yifan.'},
+                            {t:'ls',e:'I am from Canada.',c:'我来自加拿大。',o:['我来自中国。','我来自加拿大。','我来自美国。'],a:'I am from Canada.'},
+                            {t:'sp',c:'你好',a:'hello'},
+                            {t:'sp',c:'再见',a:'goodbye'},
+                            {t:'sp',c:'早上好',a:'good morning'},
+                            {t:'c2e',c:'你好',o:['Hello!','Hi!','Hey!'],a:'Hello!'},
+                            {t:'c2e',c:'再见',o:['Goodbye!','Bye!','See you!'],a:'Goodbye!'}
+                        ]
+                    },
+                    "unit2": {
+                        name: "Unit 2 Colours!",
+                        enabled: true,
+                        questions: [
+                            {t:'lw',e:'red',c:'红色',o:['红色','蓝色','绿色'],a:'red'},
+                            {t:'lw',e:'blue',c:'蓝色',o:['红色','蓝色','黄色'],a:'blue'},
+                            {t:'lw',e:'yellow',c:'黄色',o:['黄色','绿色','白色'],a:'yellow'},
+                            {t:'lw',e:'green',c:'绿色',o:['绿色','蓝色','黑色'],a:'green'},
+                            {t:'lw',e:'white',c:'白色',o:['白色','黑色','红色'],a:'white'},
+                            {t:'lw',e:'black',c:'黑色',o:['白色','黑色','棕色'],a:'black'},
+                            {t:'lw',e:'orange',c:'橙色',o:['橙色','紫色','粉色'],a:'orange'},
+                            {t:'lw',e:'brown',c:'棕色',o:['棕色','黑色','灰色'],a:'brown'},
+                            {t:'ls',e:'It is red.',c:'它是红色的。',o:['它是红色的。','它是蓝色的。','它是黄色的。'],a:'It is red.'},
+                            {t:'ls',e:'I see blue.',c:'我看到蓝色。',o:['我看到蓝色。','我看到绿色。','我看到黄色。'],a:'I see blue.'},
+                            {t:'ls',e:'This is green.',c:'这是绿色。',o:['这是绿色。','这是白色。','这是黑色。'],a:'This is green.'},
+                            {t:'sp',c:'红色',a:'red'},
+                            {t:'sp',c:'蓝色',a:'blue'},
+                            {t:'sp',c:'黄色',a:'yellow'},
+                            {t:'sp',c:'绿色',a:'green'},
+                            {t:'c2e',c:'红色',o:['Red.','Blue.','Yellow.'],a:'Red.'},
+                            {t:'c2e',c:'蓝色',o:['Blue.','Red.','Green.'],a:'Blue.'}
+                        ]
+                    },
+                    "unit3": {
+                        name: "Unit 3 Look at me!",
+                        enabled: true,
+                        questions: [
+                            {t:'lw',e:'face',c:'脸',o:['脸','手','脚'],a:'face'},
+                            {t:'lw',e:'ear',c:'耳朵',o:['眼睛','耳朵','鼻子'],a:'ear'},
+                            {t:'lw',e:'eye',c:'眼睛',o:['眼睛','鼻子','嘴巴'],a:'eye'},
+                            {t:'lw',e:'nose',c:'鼻子',o:['耳朵','鼻子','嘴巴'],a:'nose'},
+                            {t:'lw',e:'mouth',c:'嘴巴',o:['眼睛','鼻子','嘴巴'],a:'mouth'},
+                            {t:'lw',e:'hand',c:'手',o:['手','脚','头'],a:'hand'},
+                            {t:'lw',e:'head',c:'头',o:['头','脸','脖子'],a:'head'},
+                            {t:'lw',e:'arm',c:'手臂',o:['手臂','腿','脚'],a:'arm'},
+                            {t:'ls',e:'Look at my face.',c:'看我的脸。',o:['看我的脸。','看我的手。','看我的头。'],a:'Look at my face.'},
+                            {t:'ls',e:'This is my nose.',c:'这是我的鼻子。',o:['这是我的鼻子。','这是我的眼睛。','这是我的耳朵。'],a:'This is my nose.'},
+                            {t:'ls',e:'Touch your head.',c:'摸摸你的头。',o:['摸摸你的头。','摸摸你的手。','摸摸你的脚。'],a:'Touch your head.'},
+                            {t:'sp',c:'脸',a:'face'},
+                            {t:'sp',c:'眼睛',a:'eye'},
+                            {t:'sp',c:'鼻子',a:'nose'},
+                            {t:'sp',c:'手',a:'hand'},
+                            {t:'c2e',c:'看我的脸',o:['Look at my face.','Touch my face.','This is my face.'],a:'Look at my face.'},
+                            {t:'c2e',c:'这是我的鼻子',o:['This is my nose.','This is my eye.','This is my ear.'],a:'This is my nose.'}
+                        ]
+                    },
+                    "unit4": {
+                        name: "Unit 4 We love animals!",
+                        enabled: true,
+                        questions: [
+                            {t:'lw',e:'dog',c:'狗',o:['狗','猫','鸟'],a:'dog'},
+                            {t:'lw',e:'cat',c:'猫',o:['狗','猫','鱼'],a:'cat'},
+                            {t:'lw',e:'bird',c:'鸟',o:['鸟','鱼','猪'],a:'bird'},
+                            {t:'lw',e:'pig',c:'猪',o:['猪','狗','鸭子'],a:'pig'},
+                            {t:'lw',e:'duck',c:'鸭子',o:['鸭子','鸡','鹅'],a:'duck'},
+                            {t:'lw',e:'fish',c:'鱼',o:['鱼','鸟','猫'],a:'fish'},
+                            {t:'lw',e:'elephant',c:'大象',o:['大象','猴子','熊猫'],a:'elephant'},
+                            {t:'lw',e:'monkey',c:'猴子',o:['猴子','老虎','狮子'],a:'monkey'},
+                            {t:'ls',e:'I have a dog.',c:'我有一只狗。',o:['我有一只狗。','我有一只猫。','我有一只鸟。'],a:'I have a dog.'},
+                            {t:'ls',e:'It is a cat.',c:'它是一只猫。',o:['它是一只狗。','它是一只猫。','它是一只鸟。'],a:'It is a cat.'},
+                            {t:'ls',e:'Look at the elephant.',c:'看那只大象。',o:['看那只大象。','看那只猴子。','看那只熊猫。'],a:'Look at the elephant.'},
+                            {t:'sp',c:'狗',a:'dog'},
+                            {t:'sp',c:'猫',a:'cat'},
+                            {t:'sp',c:'鸟',a:'bird'},
+                            {t:'sp',c:'鱼',a:'fish'},
+                            {t:'c2e',c:'我有一只狗',o:['I have a dog.','I have a cat.','I have a bird.'],a:'I have a dog.'},
+                            {t:'c2e',c:'看那只猴子',o:['Look at the monkey.','Look at the cat.','Look at the dog.'],a:'Look at the monkey.'}
+                        ]
+                    },
+                    "unit5": {
+                        name: "Unit 5 Let\'s eat!",
+                        enabled: true,
+                        questions: [
+                            {t:'lw',e:'bread',c:'面包',o:['面包','米饭','面条'],a:'bread'},
+                            {t:'lw',e:'rice',c:'米饭',o:['米饭','面条','面包'],a:'rice'},
+                            {t:'lw',e:'milk',c:'牛奶',o:['牛奶','水','果汁'],a:'milk'},
+                            {t:'lw',e:'water',c:'水',o:['水','牛奶','果汁'],a:'water'},
+                            {t:'lw',e:'egg',c:'鸡蛋',o:['鸡蛋','蛋糕','饼干'],a:'egg'},
+                            {t:'lw',e:'fish',c:'鱼',o:['鱼','肉','鸡肉'],a:'fish'},
+                            {t:'lw',e:'juice',c:'果汁',o:['果汁','牛奶','水'],a:'juice'},
+                            {t:'lw',e:'cake',c:'蛋糕',o:['蛋糕','面包','饼干'],a:'cake'},
+                            {t:'ls',e:'I like bread.',c:'我喜欢面包。',o:['我喜欢面包。','我喜欢米饭。','我喜欢牛奶。'],a:'I like bread.'},
+                            {t:'ls',e:'Have some water.',c:'喝点水吧。',o: ['喝点水吧。','吃点面包吧。','喝点果汁吧。'],a:'Have some water.'},
+                            {t:'ls',e:'Thank you.',c:'谢谢你。',o:['谢谢你。','不客气。','对不起。'],a:'Thank you.'},
+                            {t:'sp',c:'面包',a:'bread'},
+                            {t:'sp',c:'米饭',a:'rice'},
+                            {t:'sp',c:'牛奶',a:'milk'},
+                            {t:'sp',c:'水',a:'water'},
+                            {t:'c2e',c:'我喜欢面包',o:['I like bread.','I like rice.','I like milk.'],a:'I like bread.'},
+                            {t:'c2e',c:'喝点水',o:['Have some water.','Have some milk.','Have some juice.'],a:'Have some water.'}
+                        ]
+                    },
+                    "unit6": {
+                        name: "Unit 6 Happy birthday!",
+                        enabled: true,
+                        questions: [
+                            {t:'lw',e:'one',c:'一',o:['一','二','三'],a:'one'},
+                            {t:'lw',e:'two',c:'二',o:['一','二','四'],a:'two'},
+                            {t:'lw',e:'three',c:'三',o:['三','二','四'],a:'three'},
+                            {t:'lw',e:'four',c:'四',o:['四','五','六'],a:'four'},
+                            {t:'lw',e:'five',c:'五',o:['五','四','六'],a:'five'},
+                            {t:'lw',e:'six',c:'六',o:['六','七','八'],a:'six'},
+                            {t:'lw',e:'seven',c:'七',o:['七','六','八'],a:'seven'},
+                            {t:'lw',e:'eight',c:'八',o:['八','七','九'],a:'eight'},
+                            {t:'lw',e:'nine',c:'九',o:['九','八','十'],a:'nine'},
+                            {t:'lw',e:'ten',c:'十',o:['十','九','一'],a:'ten'},
+                            {t:'ls',e:'How old are you?',c:'你几岁了？',o:['你几岁了？','你叫什么名字？','你好吗？'],a:'How old are you?'},
+                            {t:'ls',e:'I am six.',c:'我六岁了。',o:['我五岁了。','我六岁了。','我七岁了。'],a:'I am six.'},
+                            {t:'ls',e:'Happy birthday!',c:'生日快乐！',o:['生日快乐！','新年快乐！','圣诞快乐！'],a:'Happy birthday!'},
+                            {t:'sp',c:'一',a:'one'},
+                            {t:'sp',c:'二',a:'two'},
+                            {t:'sp',c:'三',a:'three'},
+                            {t:'sp',c:'四',a:'four'},
+                            {t:'sp',c:'五',a:'five'},
+                            {t:'sp',c:'十',a:'ten'},
+                            {t:'c2e',c:'你几岁',o:['How old are you?','What is your name?','How are you?'],a:'How old are you?'},
+                            {t:'c2e',c:'我六岁',o:['I am six.','I am five.','I am seven.'],a:'I am six.'}
+                        ]
+                    }
+                }
+            },
+            "down": {
+                name: "三年级下册",
+                enabled: true,
+                units: {
+                    "unit1": {
+                        name: "Unit 1 Welcome back!",
+                        enabled: true,
+                        questions: [
+                            {t:'lw',e:'boy',c:'男孩',o:['男孩','女孩','老师'],a:'boy'},
+                            {t:'lw',e:'girl',c:'女孩',o:['男孩','女孩','学生'],a:'girl'},
+                            {t:'lw',e:'teacher',c:'老师',o:['老师','学生','朋友'],a:'teacher'},
+                            {t:'lw',e:'student',c:'学生',o:['老师','学生','男孩'],a:'student'},
+                            {t:'lw',e:'hello',c:'你好',o:['你好','再见','谢谢'],a:'hello'},
+                            {t:'lw',e:'goodbye',c:'再见',o:['你好','再见','谢谢'],a:'goodbye'},
+                            {t:'ls',e:'Hello, I am Amy.',c:'你好，我是Amy。',o:['你好，我是Amy。','你好吗？','再见'],a:'Hello, I am Amy.'},
+                            {t:'ls',e:'I am a student.',c:'我是一名学生。',o:['我是一名老师。','我是一名学生。','我是男孩。'],a:'I am a student.'},
+                            {t:'ls',e:'I am from Canada.',c:'我来自加拿大。',o:['我来自中国。','我来自加拿大。','我来自美国。'],a:'I am from Canada.'},
+                            {t:'sp',c:'男孩',a:'boy'},
+                            {t:'sp',c:'女孩',a:'girl'},
+                            {t:'sp',c:'老师',a:'teacher'},
+                            {t:'sp',c:'学生',a:'student'},
+                            {t:'c2e',c:'你好',o:['Hello!','Hi!','Hey!'],a:'Hello!'},
+                            {t:'c2e',c:'我是学生',o:['I am a student.','I am a teacher.','I am a boy.'],a:'I am a student.'}
+                        ]
+                    },
+                    "unit2": {
+                        name: "Unit 2 My family",
+                        enabled: true,
+                        questions: [
+                            {t:'lw',e:'father',c:'爸爸',o:['爸爸','妈妈','爷爷'],a:'father'},
+                            {t:'lw',e:'mother',c:'妈妈',o:['妈妈','姐姐','奶奶'],a:'mother'},
+                            {t:'lw',e:'sister',c:'姐妹',o:['姐妹','兄弟','家庭'],a:'sister'},
+                            {t:'lw',e:'brother',c:'兄弟',o:['兄弟','姐妹','家人'],a:'brother'},
+                            {t:'lw',e:'family',c:'家庭',o:['家庭','朋友','学校'],a:'family'},
+                            {t:'lw',e:'man',c:'男人',o:['男人','女人','小孩'],a:'man'},
+                            {t:'lw',e:'woman',c:'女人',o:['男人','女人','老师'],a:'woman'},
+                            {t:'ls',e:'Who is she?',c:'她是谁？',o:['他是谁？','她是谁？','它是谁？'],a:'Who is she?'},
+                            {t:'ls',e:'She is my mother.',c:'她是我的妈妈。',o:['她是我的妈妈。','他是我的爸爸。','她是我的姐姐。'],a:'She is my mother.'},
+                            {t:'ls',e:'He is my brother.',c:'他是我的兄弟。',o:['他是我的兄弟。','他是我的爸爸。','他是我的朋友。'],a:'He is my brother.'},
+                            {t:'sp',c:'爸爸',a:'father'},
+                            {t:'sp',c:'妈妈',a:'mother'},
+                            {t:'sp',c:'家庭',a:'family'},
+                            {t:'sp',c:'兄弟',a:'brother'},
+                            {t:'c2e',c:'她是谁',o:['Who is she?','Who is he?','Who is it?'],a:'Who is she?'},
+                            {t:'c2e',c:'我的家庭',o:['My family.','My home.','My house.'],a:'My family.'}
+                        ]
+                    },
+                    "unit3": {
+                        name: "Unit 3 At the zoo",
+                        enabled: true,
+                        questions: [
+                            {t:'lw',e:'elephant',c:'大象',o:['大象','长颈鹿','猴子'],a:'elephant'},
+                            {t:'lw',e:'bird',c:'鸟',o:['鸟','猫','狗'],a:'bird'},
+                            {t:'lw',e:'tiger',c:'老虎',o:['老虎','狮子','熊猫'],a:'tiger'},
+                            {t:'lw',e:'panda',c:'熊猫',o:['熊猫','熊','兔子'],a:'panda'},
+                            {t:'lw',e:'zoo',c:'动物园',o:['动物园','公园','学校'],a:'zoo'},
+                            {t:'lw',e:'lion',c:'狮子',o:['狮子','老虎','豹子'],a:'lion'},
+                            {t:'lw',e:'monkey',c:'猴子',o:['猴子','大象','兔子'],a:'monkey'},
+                            {t:'lw',e:'cat',c:'猫',o:['猫','狗','兔子'],a:'cat'},
+                            {t:'lw',e:'dog',c:'狗',o:['狗','猫','猪'],a:'dog'},
+                            {t:'lw',e:'big',c:'大的',o:['大的','小的','高的'],a:'big'},
+                            {t:'lw',e:'small',c:'小的',o:['大的','小的','长的'],a:'small'},
+                            {t:'lw',e:'tall',c:'高的',o:['高的','矮的','胖的'],a:'tall'},
+                            {t:'lw',e:'short',c:'矮的',o:['高的','矮的','长的'],a:'short'},
+                            {t:'lw',e:'fat',c:'胖的',o:['胖的','瘦的','高的'],a:'fat'},
+                            {t:'ls',e:'Look at the elephant.',c:'看那只大象。',o:['看那只大象。','看那只猴子。','看那只熊猫。'],a:'Look at the elephant.'},
+                            {t:'ls',e:'It is so tall!',c:'它好高啊！',o:['它好高啊！','它好胖啊！','它好小啊！'],a:'It is so tall!'},
+                            {t:'ls',e:'It is so big!',c:'它好大啊！',o:['它好小啊！','它好大啊！','它好高啊！'],a:'It is so big!'},
+                            {t:'sp',c:'大象',a:'elephant'},
+                            {t:'sp',c:'熊猫',a:'panda'},
+                            {t:'sp',c:'老虎',a:'tiger'},
+                            {t:'sp',c:'动物园',a:'zoo'},
+                            {t:'sp',c:'大的',a:'big'},
+                            {t:'sp',c:'小的',a:'small'},
+                            {t:'c2e',c:'看那只鸟',o:['Look at the bird.','Look at the cat.','Look at the dog.'],a:'Look at the bird.'},
+                            {t:'c2e',c:'它好胖',o:['It is so fat!','It is so big!','It is so tall!'],a:'It is so fat!'}
+                        ]
+                    },
+                    "unit4": {
+                        name: "Unit 4 Where is my car?",
+                        enabled: true,
+                        questions: [
+                            {t:'lw',e:'ball',c:'球',o:['球','汽车','船'],a:'ball'},
+                            {t:'lw',e:'car',c:'汽车',o:['汽车','公共汽车','火车'],a:'car'},
+                            {t:'lw',e:'boat',c:'船',o:['船','球','汽车'],a:'boat'},
+                            {t:'lw',e:'map',c:'地图',o:['地图','书','铅笔'],a:'map'},
+                            {t:'lw',e:'toy',c:'玩具',o:['玩具','球','书'],a:'toy'},
+                            {t:'lw',e:'under',c:'在...下面',o:['在...下面','在...里面','在...上面'],a:'under'},
+                            {t:'lw',e:'in',c:'在...里面',o:['在...里面','在...上面','在...下面'],a:'in'},
+                            {t:'lw',e:'on',c:'在...上面',o:['在...上面','在...里面','在...下面'],a:'on'},
+                            {t:'lw',e:'desk',c:'桌子',o:['桌子','椅子','盒子'],a:'desk'},
+                            {t:'lw',e:'chair',c:'椅子',o:['椅子','桌子','床'],a:'chair'},
+                            {t:'ls',e:'Where is the ball?',c:'球在哪里？',o:['球在哪里？','汽车在哪里？','船在哪里？'],a:'Where is the ball?'},
+                            {t:'ls',e:'It is in the desk.',c:'它在桌子里。',o:['它在桌子下。','它在桌子里。','它在桌子上。'],a:'It is in the desk.'},
+                            {t:'ls',e:'It is under the chair.',c:'它在椅子下面。',o:['它在椅子下面。','它在椅子上面。','它在椅子里。'],a:'It is under the chair.'},
+                            {t:'sp',c:'球',a:'ball'},
+                            {t:'sp',c:'汽车',a:'car'},
+                            {t:'sp',c:'船',a:'boat'},
+                            {t:'sp',c:'地图',a:'map'},
+                            {t:'c2e',c:'球在哪里',o:['Where is the ball?','What is the ball?','Who has the ball?'],a:'Where is the ball?'},
+                            {t:'c2e',c:'它在盒子里',o:['It is in the box.','It is on the box.','It is under the box.'],a:'It is in the box.'}
+                        ]
+                    },
+                    "unit5": {
+                        name: "Unit 5 Do you like pears?",
+                        enabled: true,
+                        questions: [
+                            {t:'lw',e:'apple',c:'苹果',o:['苹果','香蕉','橙子'],a:'apple'},
+                            {t:'lw',e:'banana',c:'香蕉',o:['苹果','香蕉','葡萄'],a:'banana'},
+                            {t:'lw',e:'orange',c:'橙子',o:['橙子','苹果','梨'],a:'orange'},
+                            {t:'lw',e:'pear',c:'梨',o:['梨','苹果','桃'],a:'pear'},
+                            {t:'lw',e:'grape',c:'葡萄',o:['葡萄','香蕉','苹果'],a:'grape'},
+                            {t:'lw',e:'fruit',c:'水果',o:['水果','食物','蔬菜'],a:'fruit'},
+                            {t:'lw',e:'like',c:'喜欢',o:['喜欢','想要','需要'],a:'like'},
+                            {t:'ls',e:'Do you like apples?',c:'你喜欢苹果吗？',o:['你喜欢苹果吗？','你想要苹果吗？','你吃苹果吗？'],a:'Do you like apples?'},
+                            {t:'ls',e:'Yes, I do.',c:'是的，我喜欢。',o:['是的，我喜欢。','不，我不喜欢。','我不知道。'],a:'Yes, I do.'},
+                            {t:'ls',e:"No, I don't.",c:'不，我不喜欢。',o:['不，我不喜欢。','是的，我喜欢。','好的。'],a:"No, I don't."},
+                            {t:'ls',e:'I like bananas.',c:'我喜欢香蕉。',o:['我喜欢香蕉。','我想要香蕉。','我吃香蕉。'],a:'I like bananas.'},
+                            {t:'sp',c:'苹果',a:'apple'},
+                            {t:'sp',c:'香蕉',a:'banana'},
+                            {t:'sp',c:'橙子',a:'orange'},
+                            {t:'sp',c:'葡萄',a:'grape'},
+                            {t:'c2e',c:'你喜欢梨吗',o:['Do you like pears?','Do you like apples?','Do you like grapes?'],a:'Do you like pears?'},
+                            {t:'c2e',c:'是的我喜欢',o:['Yes, I do.','No, I don\'t.','Yes, I like.'],a:'Yes, I do.'}
+                        ]
+                    },
+                    "unit6": {
+                        name: "Unit 6 How many?",
+                        enabled: true,
+                        questions: [
+                            {t:'lw',e:'one',c:'一',o:['一','二','十'],a:'one'},
+                            {t:'lw',e:'two',c:'二',o:['一','二','三'],a:'two'},
+                            {t:'lw',e:'three',c:'三',o:['三','二','四'],a:'three'},
+                            {t:'lw',e:'four',c:'四',o:['四','五','六'],a:'four'},
+                            {t:'lw',e:'five',c:'五',o:['五','四','六'],a:'five'},
+                            {t:'lw',e:'six',c:'六',o:['六','七','八'],a:'six'},
+                            {t:'lw',e:'seven',c:'七',o:['七','六','八'],a:'seven'},
+                            {t:'lw',e:'eight',c:'八',o:['八','七','九'],a:'eight'},
+                            {t:'lw',e:'nine',c:'九',o:['九','八','十'],a:'nine'},
+                            {t:'lw',e:'ten',c:'十',o:['十','九','一'],a:'ten'},
+                            {t:'lw',e:'eleven',c:'十一',o:['十一','十二','十'],a:'eleven'},
+                            {t:'lw',e:'twelve',c:'十二',o:['十一','十二','十'],a:'twelve'},
+                            {t:'lw',e:'kite',c:'风筝',o:['风筝','鸟','飞机'],a:'kite'},
+                            {t:'lw',e:'beautiful',c:'美丽的',o:['美丽的','好看的','漂亮的'],a:'beautiful'},
+                            {t:'ls',e:'How many apples?',c:'有多少苹果？',o:['有多少苹果？','这是什么？','你喜欢吗？'],a:'How many apples?'},
+                            {t:'ls',e:'I see eleven.',c:'我看见了十一。',o:['我看见了十一。','我有十一。','这是十一。'],a:'I see eleven.'},
+                            {t:'ls',e:'It is beautiful!',c:'它好美啊！',o:['它好美啊！','它好大啊！','它好高啊！'],a:'It is beautiful!'},
+                            {t:'sp',c:'一',a:'one'},
+                            {t:'sp',c:'二',a:'two'},
+                            {t:'sp',c:'三',a:'three'},
+                            {t:'sp',c:'四',a:'four'},
+                            {t:'sp',c:'五',a:'five'},
+                            {t:'sp',c:'十',a:'ten'},
+                            {t:'c2e',c:'有多少',o:['How many?','What is it?','Where is it?'],a:'How many?'},
+                            {t:'c2e',c:'我看见了十一',o:['I see eleven.','I have eleven.','It is eleven.'],a:'I see eleven.'}
+                        ]
+                    }
+                }
+            }
+        }
+    },
+    // ===== 预留四年级空间 - 后期导入题库即可启用 =====
+    "4": {
+        name: "四年级",
+        enabled: false,  // 预留，未启用
+        books: {
+            "up": {
+                name: "四年级上册",
+                enabled: false,
+                units: {}
+            },
+            "down": {
+                name: "四年级下册",
+                enabled: false,
+                units: {}
+            }
+        }
+    },
+    // ===== 预留五年级空间 =====
+    "5": {
+        name: "五年级",
+        enabled: false,
+        books: {
+            "up": {
+                name: "五年级上册",
+                enabled: false,
+                units: {}
+            },
+            "down": {
+                name: "五年级下册",
+                enabled: false,
+                units: {}
+            }
+        }
+    },
+    // ===== 预留六年级空间 =====
+    "6": {
+        name: "六年级",
+        enabled: false,
+        books: {
+            "up": {
+                name: "六年级上册",
+                enabled: false,
+                units: {}
+            },
+            "down": {
+                name: "六年级下册",
+                enabled: false,
+                units: {}
+            }
+        }
+    }
+};
+
+// ============ 兼容旧版题库（保留 Q 对象用于兼容） ============
+// 自动从三年级下册生成 Q 对象
+var Q = {};
+(function() {
+    var grade3Down = QUESTION_BANK["3"].books["down"];
+    if (grade3Down && grade3Down.units) {
+        for (var unitKey in grade3Down.units) {
+            Q[unitKey] = grade3Down.units[unitKey].questions || [];
+        }
+    }
+})();
+
+// ============ 题库工具函数 ============
+
+// 获取当前选中的年级
+var CURRENT_GRADE = "3";  // 默认三年级
+var CURRENT_BOOK = "down";  // 默认下册
+
+// 设置当前年级
+function setCurrentGrade(grade) {
+    if (QUESTION_BANK[grade] && QUESTION_BANK[grade].enabled) {
+        CURRENT_GRADE = grade;
+        // 自动选择第一个启用的册数
+        if (QUESTION_BANK[grade].books.up.enabled) {
+            CURRENT_BOOK = "up";
+        } else if (QUESTION_BANK[grade].books.down.enabled) {
+            CURRENT_BOOK = "down";
+        }
+        saveData();
+        return true;
+    }
+    return false;
+}
+
+// 设置当前册数
+function setCurrentBook(book) {
+    if (QUESTION_BANK[CURRENT_GRADE] && QUESTION_BANK[CURRENT_GRADE].books[book] && QUESTION_BANK[CURRENT_GRADE].books[book].enabled) {
+        CURRENT_BOOK = book;
+        saveData();
+        return true;
+    }
+    return false;
+}
+
+// 获取当前年级的题库
+function getCurrentQuestionBank() {
+    var grade = QUESTION_BANK[CURRENT_GRADE];
+    if (!grade || !grade.enabled) return null;
+    var book = grade.books[CURRENT_BOOK];
+    if (!book || !book.enabled) return null;
+    return book;
+}
+
+// 获取指定年级和册数的题库
+function getQuestionBank(grade, book) {
+    var g = QUESTION_BANK[grade];
+    if (!g || !g.enabled) return null;
+    var b = g.books[book];
+    if (!b || !b.enabled) return null;
+    return b;
+}
+
+// 获取所有可用年级列表
+function getAvailableGrades() {
+    var grades = [];
+    for (var g in QUESTION_BANK) {
+        if (QUESTION_BANK[g].enabled) {
+            grades.push({
+                id: g,
+                name: QUESTION_BANK[g].name
+            });
+        }
+    }
+    return grades;
+}
+
+// 获取当前年级的可用册数列表
+function getAvailableBooks() {
+    var grade = QUESTION_BANK[CURRENT_GRADE];
+    if (!grade) return [];
+    var books = [];
+    if (grade.books.up.enabled) {
+        books.push({id: "up", name: grade.books.up.name});
+    }
+    if (grade.books.down.enabled) {
+        books.push({id: "down", name: grade.books.down.name});
+    }
+    return books;
+}
+
+// 获取指定册数的单元列表
+function getUnitList(grade, book) {
+    var bank = getQuestionBank(grade, book);
+    if (!bank) return [];
+    var units = [];
+    for (var u in bank.units) {
+        if (bank.units[u].enabled && bank.units[u].questions.length > 0) {
+            units.push({
+                id: u,
+                name: bank.units[u].name,
+                count: bank.units[u].questions.length
+            });
+        }
+    }
+    return units;
+}
+
+// 获取所有题目的扁平池（指定年级、册数、单元）
+function getQuestionPool(grade, book, unitId) {
+    var bank = getQuestionBank(grade, book);
+    if (!bank) return [];
+    
+    if (unitId === '0') {
+        // 全单元合并
+        var pool = [];
+        for (var u in bank.units) {
+            if (bank.units[u].enabled) {
+                pool = pool.concat(bank.units[u].questions || []);
+            }
+        }
+        return pool;
+    } else {
+        // 指定单元
+        if (bank.units[unitId] && bank.units[unitId].enabled) {
+            return bank.units[unitId].questions || [];
+        }
+    }
+    return [];
+}
+
+// 获取随机题目池
+function getRandomQuestions(grade, book, unitId, count) {
+    var pool = getQuestionPool(grade, book, unitId);
+    // 打乱顺序
+    pool = pool.sort(function() { return Math.random() - 0.5; });
+    return pool.slice(0, Math.min(count, pool.length));
+}
+
+// 获取年级名称
+function getGradeName(grade) {
+    return QUESTION_BANK[grade] ? QUESTION_BANK[grade].name : '';
+}
+
+// 获取册数名称
+function getBookName(book) {
+    return CURRENT_GRADE && QUESTION_BANK[CURRENT_GRADE] ? 
+        (QUESTION_BANK[CURRENT_GRADE].books[book] ? QUESTION_BANK[CURRENT_GRADE].books[book].name : '') : '';
+}
+
+// 获取年级总题目数
+function getGradeTotalQuestions(grade) {
+    var g = QUESTION_BANK[grade];
+    if (!g) return 0;
+    var total = 0;
+    for (var b in g.books) {
+        if (g.books[b].enabled) {
+            for (var u in g.books[b].units) {
+                if (g.books[b].units[u].enabled) {
+                    total += g.books[b].units[u].questions.length;
+                }
+            }
+        }
+    }
+    return total;
+}
+
+// ============ 初始化 ============
+function init() {
+    loadData();
+    
+    // Tab点击事件绑定
+    bindTabEvents();
+    
+    // 初始化年级选择器
+    initGradeSelectors();
+    
+    // 初始化页面
+    refreshCurrentPage();
+}
+
+// 绑定所有Tab点击事件
+function bindTabEvents() {
+    // 登录Tab
+    var loginTabs = document.getElementById('login-tabs');
+    if (loginTabs) {
+        loginTabs.onclick = function(e) {
+            var target = e.target || e.srcElement;
+            if (target.className && target.className.indexOf('tab') > -1) {
+                switchLoginTab(target.getAttribute('data-tab'));
+            }
+        };
+    }
+    
+    // 老师Tab
+    var teacherTabs = document.getElementById('teacher-tabs');
+    if (teacherTabs) {
+        teacherTabs.onclick = function(e) {
+            var target = e.target || e.srcElement;
+            if (target.className && target.className.indexOf('tab') > -1) {
+                switchTeacherTab(target.getAttribute('data-tab'));
+            }
+        };
+    }
+    
+    // 班级列表Tab
+    var classListTabs = document.getElementById('class-list-tabs');
+    if (classListTabs) {
+        classListTabs.onclick = function(e) {
+            var target = e.target || e.srcElement;
+            if (target.className && target.className.indexOf('tab') > -1) {
+                switchClassListTab(target.getAttribute('data-tab'));
+            }
+        };
+    }
+    
+    // 练习Tab
+    var practiceTabs = document.getElementById('practice-tabs');
+    if (practiceTabs) {
+        practiceTabs.onclick = function(e) {
+            var target = e.target || e.srcElement;
+            if (target.className && target.className.indexOf('tab') > -1) {
+                switchPracticeTab(target.getAttribute('data-tab'));
+            }
+        };
+    }
+    
+    // 房间Tab
+    var roomTabs = document.getElementById('room-tabs');
+    if (roomTabs) {
+        roomTabs.onclick = function(e) {
+            var target = e.target || e.srcElement;
+            if (target.className && target.className.indexOf('tab') > -1) {
+                switchRoomTab(target.getAttribute('data-tab'));
+            }
+        };
+    }
+}
+
+// ============ 登录Tab切换 ============
+function switchLoginTab(tabName) {
+    var tabs = document.getElementById('login-tabs');
+    var btns = tabs.querySelectorAll('.tab');
+    for (var i = 0; i < btns.length; i++) {
+        btns[i].className = 'tab';
+    }
+    for (var i = 0; i < btns.length; i++) {
+        if (btns[i].getAttribute('data-tab') === tabName) {
+            btns[i].className = 'tab active';
+        }
+    }
+    document.getElementById('login-main').style.display = 'none';
+    document.getElementById('login-new').style.display = 'none';
+    document.getElementById(tabName).style.display = 'block';
+}
+
+// ============ 练习Tab切换 ============
+function switchPracticeTab(tabName) {
+    var tabs = document.getElementById('practice-tabs');
+    var btns = tabs.querySelectorAll('.tab');
+    for (var i = 0; i < btns.length; i++) {
+        btns[i].className = 'tab';
+    }
+    for (var i = 0; i < btns.length; i++) {
+        if (btns[i].getAttribute('data-tab') === tabName) {
+            btns[i].className = 'tab active';
+        }
+    }
+    document.getElementById('prac-unit').style.display = 'none';
+    document.getElementById('prac-random').style.display = 'none';
+    document.getElementById(tabName).style.display = 'block';
+}
+
+// ============ 房间Tab切换 ============
+function switchRoomTab(tabName) {
+    var tabs = document.getElementById('room-tabs');
+    var btns = tabs.querySelectorAll('.tab');
+    for (var i = 0; i < btns.length; i++) {
+        btns[i].className = 'tab';
+    }
+    for (var i = 0; i < btns.length; i++) {
+        if (btns[i].getAttribute('data-tab') === tabName) {
+            btns[i].className = 'tab active';
+        }
+    }
+    document.getElementById('room-create').style.display = 'none';
+    document.getElementById('room-join').style.display = 'none';
+    document.getElementById('room-observe').style.display = 'none';
+    document.getElementById(tabName).style.display = 'block';
+}
+
+// ============ 数据持久化（本地缓存，服务器是主数据源） ============
+function loadData() {
+    var d = localStorage.getItem('englishBattle');
+    if (d) {
+        var o = JSON.parse(d);
+        for (var key in o) {
+            if (S.hasOwnProperty(key)) {
+                S[key] = o[key];
+            }
+        }
+    }
+}
+
+function saveData() {
+    var o = {
+        dynamicCode: S.dynamicCode,
+        currentUser: S.currentUser,
+        isTeacher: S.isTeacher,
+        teacherInfo: S.teacherInfo,
+        classes: S.classes,
+        students: S.students,
+        pendingStudents: S.pendingStudents,
+        battleHistory: S.battleHistory,
+        onlineUsers: S.onlineUsers
+    };
+    localStorage.setItem('englishBattle', JSON.stringify(o));
+}
+
+// ============ 页面导航 ============
+function showPage(id) {
+    var pages = document.querySelectorAll('.page');
+    for (var i = 0; i < pages.length; i++) {
+        pages[i].className = 'page';
+    }
+    var target = document.getElementById('page-' + id);
+    if (target) {
+        target.className = 'page active';
+    }
+    if (id === 'record') renderRecordList();
+    if (id === 'rank') renderRankList();
+    if (id === 'battle') renderPlayerList();
+    if (id === 'class-list') {
+        renderClassList();
+        renderPendingList();
+    }
+    if (id === 'class-chat') {
+        joinClassChat();
+    }
+    // 老师后台题库管理初始化
+    if (id === 'admin' && S.isTeacher) {
+        initAdminGradeSelectors();
+    }
+}
+
+// ============ 刷新当前页面 ============
+function refreshCurrentPage() {
+    var currentPage = document.querySelector('.page.active');
+    if (currentPage) {
+        var pageId = currentPage.id.replace('page-', '');
+        switch (pageId) {
+            case 'class-list': renderClassList(); renderPendingList(); break;
+            case 'rank': renderRankList(); break;
+            case 'battle': renderPlayerList(); break;
+            case 'record': renderRecordList(); break;
+        }
+    }
+    
+    // 更新老师入口显示
+    var teacherEntry = document.getElementById('teacher-entry-btn');
+    if (teacherEntry) {
+        teacherEntry.style.display = S.isTeacher ? 'block' : 'none';
+    }
+}
+
+// ============ 登录/注册 ============
+function doLogin() {
+    var pwd = document.getElementById('login-password').value.trim();
+    var classCode = document.getElementById('login-class-code').value.trim().toUpperCase();
+    
+    if (!classCode) {
+        toast('请输入班级码');
+        return;
+    }
+    if (!pwd || pwd.length !== 6) {
+        toast('请输入6位数字密码');
+        return;
+    }
+    
+    if (WS.connected) {
+        WS.send({type: 'login', password: pwd, classCode: classCode});
+    } else {
+        toast('无法连接到服务器，请检查网络');
+    }
+}
+
+function doRegister() {
+    var classCode = document.getElementById('reg-class-code').value.trim().toUpperCase();
+    var name = document.getElementById('reg-name').value.trim();
+    
+    if (!classCode) {
+        alert('请输入班级码！');
+        return;
+    }
+    if (!name) {
+        alert('请输入姓名！');
+        return;
+    }
+    
+    if (WS.connected) {
+        WS.send({type: 'registerRequest', name: name, classCode: classCode});
+    } else {
+        toast('无法连接到服务器');
+    }
+}
+
+// ============ 老师登录/注册 ============
+function doTeacherLogin() {
+    var username = document.getElementById('teacher-login-name').value.trim();
+    var password = document.getElementById('teacher-login-pwd').value.trim();
+    
+    if (!username || !password) {
+        toast('请输入用户名和密码');
+        return;
+    }
+    
+    if (WS.connected) {
+        WS.send({type: 'teacherLogin', username: username, password: password});
+    } else {
+        toast('无法连接到服务器');
+    }
+}
+
+function doTeacherRegister() {
+    var username = document.getElementById('teacher-reg-name').value.trim();
+    var displayName = document.getElementById('teacher-reg-display').value.trim();
+    var password = document.getElementById('teacher-reg-pwd').value.trim();
+    
+    if (!username || !password) {
+        toast('请输入用户名和密码');
+        return;
+    }
+    
+    if (WS.connected) {
+        WS.send({type: 'teacherRegister', username: username, displayName: displayName || username, password: password});
+    } else {
+        toast('无法连接到服务器');
+    }
+}
+
+// ============ 老师Tab切换 ============
+function switchTeacherTab(tabName) {
+    var tabs = document.getElementById('teacher-tabs');
+    if (!tabs) return;
+    var btns = tabs.querySelectorAll('.tab');
+    for (var i = 0; i < btns.length; i++) {
+        btns[i].className = 'tab';
+    }
+    for (var i = 0; i < btns.length; i++) {
+        if (btns[i].getAttribute('data-tab') === tabName) {
+            btns[i].className = 'tab active';
+        }
+    }
+    document.getElementById('teacher-login-form').style.display = 'none';
+    document.getElementById('teacher-reg-form').style.display = 'none';
+    document.getElementById(tabName).style.display = 'block';
+}
+
+function logout() {
+    S.currentUser = null;
+    S.isTeacher = false;
+    S.teacherInfo = null;
+    S.inClassChat = false;
+    S.classChatHistory = [];
+    S.autoPlayEnabled = false;
+    if (S.mediaRecorder && S.isRecording) {
+        S.mediaRecorder.stop();
+        S.isRecording = false;
+    }
+    showPage('login');
+}
+
+// ============ 班级管理 ============
+
+// 创建班级弹窗
+function showCreateClassModal() {
+    var name = prompt('请输入班级名称（如：三年级1班）：');
+    if (!name) return;
+    
+    var code = prompt('请输入班级码（如：CLASS01）：', name.replace(/[^a-zA-Z0-9]/g, '').substring(0, 10).toUpperCase());
+    if (!code) return;
+    
+    if (WS.connected) {
+        WS.send({type: 'createClass', name: name, code: code.toUpperCase()});
+    }
+}
+
+// 渲染班级列表
+function renderClassList() {
+    var container = document.getElementById('class-list-container');
+    if (!container) return;
+    
+    if (!S.classes || S.classes.length === 0) {
+        container.innerHTML = '<p style="color:#868E96;text-align:center;padding:30px;">暂无班级<br><br><button class="btn btn-s btn-sm" onclick="showCreateClassModal()">创建第一个班级</button></p>';
+        return;
+    }
+    
+    var html = '';
+    for (var i = 0; i < S.classes.length; i++) {
+        var c = S.classes[i];
+        var studentCount = S.students ? S.students.filter(function(s){ return s.classCode === c.code; }).length : 0;
+        html += '<div class="menu-item" onclick="openClassDetail(\'' + c.code + '\')" style="margin-bottom:12px;">';
+        html += '<div class="mi" style="background:linear-gradient(135deg,#A29BFE,#6C5CE7);">' + (i + 1) + '</div>';
+        html += '<div class="mt" style="flex:1;"><h3>' + c.name + '</h3><p style="color:#868E96;">班级码: ' + c.code + '</p></div>';
+        html += '<div style="text-align:right;"><div style="font-size:12px;color:#868E96;">学生数</div><div style="font-size:20px;font-weight:bold;color:var(--p);">' + (c.studentCount || studentCount) + '</div></div>';
+        html += '</div>';
+    }
+    container.innerHTML = html;
+}
+
+// 打开班级详情
+function openClassDetail(classCode) {
+    S.currentClass = S.classes.find(function(c){ return c.code === classCode; });
+    if (!S.currentClass) return;
+    
+    document.getElementById('class-detail-title').textContent = S.currentClass.name;
+    document.getElementById('detail-class-code').textContent = S.currentClass.code;
+    
+    // 获取班级学生
+    if (WS.connected) {
+        WS.send({type: 'getClassStudents', classCode: classCode});
+    }
+    
+    showPage('class-detail');
+}
+
+// 渲染班级学生列表
+function renderStudentList(classCode) {
+    var container = document.getElementById('class-students-list');
+    if (!container) return;
+    
+    var students = S.students ? S.students.filter(function(s){ return s.classCode === classCode; }) : [];
+    document.getElementById('class-students-count').textContent = students.length;
+    
+    if (students.length === 0) {
+        container.innerHTML = '<p style="color:#868E96;text-align:center;padding:20px;">暂无学生</p>';
+        return;
+    }
+    
+    var html = '';
+    for (var i = 0; i < students.length; i++) {
+        var s = students[i];
+        var isOnline = S.onlineUsers && S.onlineUsers.some(function(u){ return u.name === s.name; });
+        var statusHtml = isOnline ? '<span style="background:#51CF66;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;">在线</span>' : '<span style="background:#ADB5BD;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;">离线</span>';
+        var banBtn = s.banned ? '<button class="vbtn" style="background:#51CF66;color:#fff;" onclick="unbanStudent(\'' + s.id + '\',\'' + s.name + '\')">解封</button>' : '<button class="vbtn" style="background:#FF6B6B;color:#fff;" onclick="banStudent(\'' + s.id + '\',\'' + s.name + '\')">封禁</button>';
+        
+        html += '<div class="vitem">';
+        html += '<div>';
+        html += '<div style="font-weight:500;">' + s.name + statusHtml + (s.banned ? ' <span style="color:#FF6B6B;">(已封禁)</span>' : '') + '</div>';
+        html += '<div style="font-size:12px;color:#868E96;">战绩: ' + s.wins + '胜/' + s.games + '场</div>';
+        html += '</div>';
+        html += '<div class="vact">';
+        html += '<button class="vbtn" style="background:#FFE66D;color:#333;" onclick="resetStudentPwd(\'' + s.id + '\',\'' + s.name + '\')">重置密码</button>';
+        html += banBtn;
+        html += '</div>';
+        html += '</div>';
+    }
+    container.innerHTML = html;
+}
+
+// 重置学生密码
+function resetStudentPwd(studentId, studentName) {
+    if (!confirm('确定要重置 ' + studentName + ' 的密码吗？')) return;
+    if (WS.connected) {
+        WS.send({type: 'resetStudentPwd', studentId: studentId, name: studentName});
+    }
+}
+
+// 封禁学生
+function banStudent(studentId, studentName) {
+    if (!confirm('确定要封禁 ' + studentName + ' 吗？封禁后该学生将无法登录。')) return;
+    if (WS.connected) {
+        WS.send({type: 'banStudent', studentId: studentId, name: studentName});
+    }
+}
+
+// 解封学生
+function unbanStudent(studentId, studentName) {
+    if (WS.connected) {
+        WS.send({type: 'unbanStudent', studentId: studentId, name: studentName});
+    }
+}
+
+// 渲染待审核列表（班级管理页面）
+function renderPendingList() {
+    var container = document.getElementById('pending-list-container');
+    if (!container) {
+        // 兼容旧页面
+        document.getElementById('pending-count').textContent = S.pendingStudents.length;
+        var list = document.getElementById('pending-list');
+        if (list) {
+            if (S.pendingStudents.length === 0) {
+                list.innerHTML = '<p style="color:#868E96;text-align:center;padding:20px;">暂无待审核学生</p>';
+            } else {
+                var html = '';
+                for (var i = 0; i < S.pendingStudents.length; i++) {
+                    var u = S.pendingStudents[i];
+                    html += '<div class="vitem"><div><div style="font-weight:500;">' + u.name + '</div><div style="font-size:12px;color:#868E96;">' + u.className + ' | ' + u.time + '</div></div><div class="vact"><button class="vbtn pass" onclick="approveStudent(\'' + u.id + '\',\'' + u.name + '\',\'' + u.classCode + '\')">通过</button><button class="vbtn reject" onclick="rejectStudent(\'' + u.id + '\',\'' + u.name + '\',\'' + u.classCode + '\')">拒绝</button></div></div>';
+                }
+                list.innerHTML = html;
+            }
+        }
+        return;
+    }
+    
+    if (S.pendingStudents.length === 0) {
+        container.innerHTML = '<p style="color:#868E96;text-align:center;padding:30px;">暂无待审核学生</p>';
+    } else {
+        var html = '';
+        for (var i = 0; i < S.pendingStudents.length; i++) {
+            var u = S.pendingStudents[i];
+            html += '<div class="vitem" style="margin-bottom:10px;">';
+            html += '<div style="flex:1;"><div style="font-weight:500;">' + u.name + '</div><div style="font-size:12px;color:#868E96;">' + u.className + ' | ' + u.time + '</div></div>';
+            html += '<div style="display:flex;gap:5px;">';
+            html += '<button class="vbtn pass" onclick="approveStudent(\'' + u.id + '\',\'' + u.name + '\',\'' + u.classCode + '\')" style="padding:8px 12px;">通过</button>';
+            html += '<button class="vbtn reject" onclick="rejectStudent(\'' + u.id + '\',\'' + u.name + '\',\'' + u.classCode + '\')" style="padding:8px 12px;">拒绝</button>';
+            html += '</div></div>';
+        }
+        container.innerHTML = html;
+    }
+}
+
+// 审核通过
+function approveStudent(studentId, name, classCode) {
+    if (WS.connected) {
+        WS.send({type: 'approveStudent', studentId: studentId, name: name, classCode: classCode});
+    }
+}
+
+// 审核拒绝
+function rejectStudent(studentId, name, classCode) {
+    if (WS.connected) {
+        WS.send({type: 'rejectStudent', studentId: studentId, name: name, classCode: classCode});
+    }
+}
+
+// 兼容旧版 verifyUser
+function verifyUser(idx, pass) {
+    var u = S.pendingStudents[idx];
+    if (pass) {
+        approveStudent(u.id, u.name, u.classCode);
+    } else {
+        rejectStudent(u.id, u.name, u.classCode);
+    }
+}
+
+// 班级Tab切换
+function switchClassListTab(tabName) {
+    var tabs = document.getElementById('class-list-tabs');
+    if (!tabs) return;
+    var btns = tabs.querySelectorAll('.tab');
+    for (var i = 0; i < btns.length; i++) {
+        btns[i].className = 'tab';
+    }
+    for (var i = 0; i < btns.length; i++) {
+        if (btns[i].getAttribute('data-tab') === tabName) {
+            btns[i].className = 'tab active';
+        }
+    }
+    document.getElementById('my-classes').style.display = 'none';
+    document.getElementById('pending-approval').style.display = 'none';
+    document.getElementById(tabName).style.display = 'block';
+    
+    if (tabName === 'pending-approval') {
+        renderPendingList();
+    }
+}
+
+// ============ 老师后台 ============
+function adminLogin() {
+    var pwd = document.getElementById('admin-password').value;
+    if (pwd === S.adminPassword) {
+        // ===== 通过 WebSocket 验证管理员身份 =====
+        if (WS.connected) {
+            WS.send({type: 'adminLogin', password: pwd});
+        } else {
+            // 回退：本地验证（仅在离线模式）
+            S.currentUser = {name: '老师', isTeacher: true};
+            showPage('admin');
+            // 初始化老师后台题库管理模块
+            initAdminGradeSelectors();
+        }
+    } else {
+        toast('密码错误');
+    }
+}
+
+function updateDynamicCode() {
+    var n = document.getElementById('new-dynamic-code').value.trim().toUpperCase();
+    if (n) {
+        S.dynamicCode = n;
+        saveData();
+        // ===== 广播动态口令更新到所有设备 =====
+        if (WS.connected) {
+            WS.send({type: 'updateDynamicCode', code: n});
+        }
+        toast('动态指令已更新为: ' + n);
+        document.getElementById('new-dynamic-code').value = '';
+    } else {
+        toast('请输入新指令');
+    }
+}
+
+function resetDynamicCode() {
+    var newCode = prompt('请输入新的动态指令（学生登录需要输入此指令）：', S.dynamicCode);
+    if (newCode !== null && newCode.trim() !== '') {
+        var n = newCode.trim().toUpperCase();
+        S.dynamicCode = n;
+        saveData();
+        // ===== 广播动态口令更新到所有设备 =====
+        if (WS.connected) {
+            WS.send({type: 'updateDynamicCode', code: n});
+        }
+        alert('动态指令已更新为: ' + n + '\n请告知学生使用此指令登录！');
+    }
+}
+
+// ============ 班级群聊 ============
+
+// 加入班级群聊
+function joinClassChat() {
+    if (!S.currentUser || !S.currentUser.classCode) {
+        toast('请先登录');
+        return;
+    }
+    
+    if (WS.connected) {
+        WS.send({type: 'joinClassChat', classCode: S.currentUser.classCode});
+    } else {
+        toast('无法连接到服务器');
+    }
+}
+
+// 离开班级群聊
+function leaveClassChat() {
+    if (S.mediaRecorder && S.isRecording) {
+        S.mediaRecorder.stop();
+        S.isRecording = false;
+    }
+    S.inClassChat = false;
+    S.voiceQueue = [];
+    
+    if (WS.connected) {
+        WS.send({type: 'leaveClassChat'});
+    }
+    
+    showPage('home');
+}
+
+// 渲染班级群聊
+function renderClassChat() {
+    if (!S.currentClass) return;
+    
+    document.getElementById('chat-class-title').textContent = S.currentClass.name + ' 群聊';
+    
+    // 渲染消息
+    var container = document.getElementById('voice-messages');
+    if (!container) return;
+    
+    if (S.classChatHistory.length === 0) {
+        container.innerHTML = '<div style="text-align:center;color:#868E96;padding:50px 0;">暂无消息<br><br>按住下方按钮说话</div>';
+    } else {
+        container.innerHTML = '';
+        for (var i = 0; i < S.classChatHistory.length; i++) {
+            addVoiceMessageToUI(S.classChatHistory[i]);
+        }
+        container.scrollTop = container.scrollHeight;
+    }
+    
+    // 渲染在线成员
+    renderOnlineMembers();
+    
+    // 更新自动连播按钮状态
+    updateAutoPlayBtn();
+}
+
+// 渲染群聊在线成员
+function renderOnlineMembers() {
+    var container = document.getElementById('chat-online-list');
+    if (!container) return;
+    
+    var onlineInChat = S.onlineUsers.filter(function(u){ return u.inClassChat; });
+    document.getElementById('chat-online-count').textContent = onlineInChat.length;
+    
+    if (onlineInChat.length === 0) {
+        container.innerHTML = '<span style="color:#868E96;font-size:12px;">暂无在线</span>';
+        return;
+    }
+    
+    var html = '';
+    for (var i = 0; i < onlineInChat.length; i++) {
+        html += '<span class="member-tag">' + onlineInChat[i].name + '</span>';
+    }
+    container.innerHTML = html;
+}
+
+// 添加语音消息到UI
+function addVoiceMessageToUI(msg) {
+    var container = document.getElementById('voice-messages');
+    if (!container) return;
+    
+    var isMe = msg.senderId === WS.clientId;
+    var div = document.createElement('div');
+    div.className = 'cmsg ' + (isMe ? 'user' : 'other');
+    div.id = 'voice-' + msg.id;
+    
+    var time = new Date(msg.timestamp);
+    var timeStr = time.getHours().toString().padStart(2, '0') + ':' + time.getMinutes().toString().padStart(2, '0');
+    
+    div.innerHTML = '<div class="nm">' + (isMe ? '我' : msg.senderName) + ' ' + timeStr + '</div>' +
+        '<div class="ct" style="cursor:pointer;" onclick="playVoice(\'' + msg.id + '\')">' +
+        '<div style="display:flex;align-items:center;gap:8px;min-width:120px;">' +
+        '<span style="font-size:24px;">' + (isMe ? '&#x1F3A4;' : '&#x1F50A;') + '</span>' +
+        '<div style="flex:1;">' +
+        '<div style="height:4px;background:#E9ECEF;border-radius:2px;overflow:hidden;">' +
+        '<div id="progress-' + msg.id + '" style="height:100%;width:0%;background:linear-gradient(90deg,#A29BFE,#6C5CE7);transition:width 0.1s;"></div>' +
+        '</div>' +
+        '<div style="font-size:11px;color:#868E96;margin-top:2px;">' + Math.round(msg.duration) + '秒</div>' +
+        '</div>' +
+        '</div>' +
+        '</div>';
+    
+    container.appendChild(div);
+    container.scrollTop = container.scrollHeight;
+}
+
+// 兼容 addVoiceMessage
+function addVoiceMessage(msg) {
+    addVoiceMessageToUI(msg);
+}
+
+// 播放语音
+function playVoice(msgId) {
+    var msg = S.classChatHistory.find(function(m){ return m.id === msgId; });
+    if (!msg) return;
+    
+    // 如果正在播放同一条，先停止
+    if (S.currentPlaying) {
+        S.currentPlaying.pause();
+        S.currentPlaying = null;
+    }
+    
+    var audio = new Audio('data:audio/webm;base64,' + msg.audioData);
+    S.currentPlaying = audio;
+    
+    var progressBar = document.getElementById('progress-' + msgId);
+    
+    audio.ontimeupdate = function() {
+        if (progressBar && msg.duration > 0) {
+            progressBar.style.width = (audio.currentTime / msg.duration * 100) + '%';
+        }
+    };
+    
+    audio.onended = function() {
+        if (progressBar) {
+            progressBar.style.width = '100%';
+        }
+        // 自动连播
+        if (S.autoPlayEnabled && S.voiceQueue.length > 0) {
+            var next = S.voiceQueue.shift();
+            playVoice(next.id);
+        }
+    };
+    
+    audio.play().catch(function(e){
+        toast('播放失败，请点击允许音频播放');
+    });
+}
+
+// 播放下一条语音
+function playNextVoice() {
+    if (S.voiceQueue.length > 0) {
+        var next = S.voiceQueue.shift();
+        playVoice(next.id);
+    }
+}
+
+// 切换自动连播
+function toggleAutoPlay() {
+    S.autoPlayEnabled = !S.autoPlayEnabled;
+    updateAutoPlayBtn();
+    toast(S.autoPlayEnabled ? '已开启自动连播' : '已关闭自动连播');
+}
+
+function updateAutoPlayBtn() {
+    var btn = document.getElementById('auto-play-btn');
+    if (!btn) return;
+    
+    if (S.autoPlayEnabled) {
+        btn.style.background = 'var(--p)';
+        btn.style.color = '#fff';
+        btn.innerHTML = '&#x23F8; 关闭';
+    } else {
+        btn.style.background = '#E8F5E9';
+        btn.style.color = '#2E7D32';
+        btn.innerHTML = '&#x25B6; 连播';
+    }
+}
+
+// 更新群聊状态提示
+function updateChatStatus(allowed, message) {
+    var statusBar = document.getElementById('chat-status-bar');
+    var statusText = document.getElementById('chat-status-text');
+    var voiceArea = document.getElementById('voice-input-area');
+    
+    if (!allowed) {
+        statusBar.style.display = 'block';
+        statusText.textContent = message || '当前群聊未开放';
+        if (voiceArea) voiceArea.style.display = 'none';
+    } else {
+        statusBar.style.display = 'none';
+        if (voiceArea) voiceArea.style.display = 'block';
+    }
+}
+
+// 开始录音
+var recordStartY = 0;
+var longPressTimer = null;
+
+function startRecording(e) {
+    e.preventDefault();
+    
+    if (!S.inClassChat) {
+        toast('请先加入群聊');
+        return;
+    }
+    
+    recordStartY = e.touches ? e.touches[0].clientY : e.clientY;
+    
+    // 长按2秒开启自动连播
+    longPressTimer = setTimeout(function() {
+        if (!S.autoPlayEnabled) {
+            S.autoPlayEnabled = true;
+            updateAutoPlayBtn();
+            toast('已开启自动连播');
+        }
+    }, 2000);
+    
+    navigator.mediaDevices.getUserMedia({audio: true}).then(function(stream) {
+        S.mediaRecorder = new MediaRecorder(stream, {mimeType: 'audio/webm'});
+        S.audioChunks = [];
+        S.recordStartTime = Date.now();
+        
+        S.mediaRecorder.ondataavailable = function(e) {
+            if (e.data.size > 0) {
+                S.audioChunks.push(e.data);
+            }
+        };
+        
+        S.mediaRecorder.onstop = function() {
+            var duration = (Date.now() - S.recordStartTime) / 1000;
+            var blob = new Blob(S.audioChunks, {type: 'audio/webm'});
+            
+            // 转换为 Base64
+            var reader = new FileReader();
+            reader.onloadend = function() {
+                var base64 = reader.result.split(',')[1];
+                if (S.inClassChat && WS.connected) {
+                    WS.send({
+                        type: 'sendVoiceMessage',
+                        classCode: S.currentUser.classCode,
+                        audioData: base64,
+                        duration: duration
+                    });
+                }
+            };
+            reader.readAsDataURL(blob);
+            
+            // 停止所有轨道
+            stream.getTracks().forEach(function(track){ track.stop(); });
+        };
+        
+        S.mediaRecorder.start();
+        S.isRecording = true;
+        
+        // 更新UI
+        var btn = document.getElementById('voice-record-btn');
+        if (btn) {
+            btn.classList.add('playing');
+            btn.style.background = 'linear-gradient(135deg, #FF6B6B, #FF8E53)';
+        }
+        
+    }).catch(function(err) {
+        console.error('录音失败:', err);
+        toast('无法访问麦克风，请检查权限设置');
+    });
+}
+
+// 停止录音
+function stopRecording(e) {
+    e.preventDefault();
+    
+    clearTimeout(longPressTimer);
+    
+    if (S.mediaRecorder && S.isRecording) {
+        // 检查是否上滑取消
+        var endY = e.changedTouches ? e.changedTouches[0].clientY : e.clientY;
+        if (endY < recordStartY - 50) {
+            // 上滑取消
+            S.mediaRecorder.stop();
+            S.isRecording = false;
+            toast('已取消');
+        } else {
+            S.mediaRecorder.stop();
+            S.isRecording = false;
+        }
+        
+        // 更新UI
+        var btn = document.getElementById('voice-record-btn');
+        if (btn) {
+            btn.classList.remove('playing');
+            btn.style.background = '';
+        }
+    }
+}
+
+function renderVerifiedList() {
+    var countEl = document.getElementById('verified-count');
+    var list = document.getElementById('verified-list');
+    if (countEl) countEl.textContent = S.verifiedUsers.length;
+    if (!list) return;
+    if (S.verifiedUsers.length === 0) {
+        list.innerHTML = '<p style="color:#868E96;text-align:center;padding:20px;">暂无已注册学生</p>';
+    } else {
+        var html = '';
+        for (var i = 0; i < S.verifiedUsers.length; i++) {
+            var u = S.verifiedUsers[i];
+            html += '<div class="vitem" style="background:#f8f9fa;">' +
+                '<div class="vinfo">' +
+                '<div class="rname">' + u.name + '</div>' +
+                '<div class="rclass">密码: <strong style="color:#E74C3C;font-family:monospace;">' + u.password + '</strong></div>' +
+                '<div class="rclass" style="font-size:11px;color:#868E96;">注册时间: ' + u.time + '</div>' +
+                '</div>' +
+                '<div class="vact">' +
+                '<button class="vbtn" style="background:#E74C3C;color:#fff;" onclick="resetUserPwd(' + i + ')">重置密码</button>' +
+                '</div>' +
+                '</div>';
+        }
+        list.innerHTML = html;
+    }
+}
+
+function resetUserPwd(idx) {
+    if (!confirm('确定要重置 ' + S.verifiedUsers[idx].name + ' 的密码吗？')) return;
+    var newPwd = String(100000 + Math.floor(Math.random() * 900000));
+    var name = S.verifiedUsers[idx].name;
+    S.verifiedUsers[idx].password = newPwd;
+    saveData();
+    renderVerifiedList();
+    alert('密码已重置！\n学生: ' + name + '\n新密码: ' + newPwd);
+    // ===== 通知服务器重置密码（服务器会通知学生） =====
+    if (WS.connected) {
+        WS.send({type: 'resetUserPwd', name: name, newPassword: newPwd});
+    }
+}
+
+// ============ 对战池（显示在线用户） ============
+function renderPlayerList() {
+    var list = document.getElementById('player-list');
+    if (!list) return;
+    
+    var myName = S.currentUser ? S.currentUser.name : '';
+    
+    // 按班级过滤在线用户
+    var online = S.onlineUsers.filter(function(u) {
+        return !u.isTeacher && u.name !== myName && 
+               (!S.currentUser || !S.currentUser.classCode || u.classCode === S.currentUser.classCode);
+    });
+    
+    if (online.length === 0) {
+        list.innerHTML = '<p style="color:#868E96;text-align:center;padding:20px;">当前暂无在线同学</p><p style="color:#868E96;text-align:center;">可以和AI对战哦！</p>';
+    } else {
+        var html = '';
+        for (var i = 0; i < online.length; i++) {
+            var u = online[i];
+            // 从 students 查找战绩
+            var stats = S.students.find(function(s){ return s.name === u.name; }) || {wins:0, games:0};
+            var roomTag = u.currentRoom ? ' <span style="color:#E67E22;font-size:11px;">在房间</span>' : '';
+            html += '<div class="pitem"><div class="pinfo"><div class="pav">' + u.name.charAt(0) + '</div><div><div class="rname">' + u.name + roomTag + '</div><div style="font-size:11px;color:#868E96;">战绩: ' + (stats.wins || 0) + '胜/' + (stats.games || 0) + '场</div></div></div><div style="display:flex;align-items:center;gap:10px;"><span style="background:#51CF66;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;">在线</span><button class="btn-sm btn-p" onclick="challengePlayer(\'' + u.name + '\')">挑战</button></div></div>';
+        }
+        list.innerHTML = html;
+    }
+}
+
+function challengePlayer(name) {
+    if (confirm('确定要向 ' + name + ' 发起挑战吗？')) {
+        toast('挑战已发送！正在等待对方回应...');
+    }
+}
+
+// 兼容旧版函数
+function renderVerifiedList() {
+    // 旧版已废弃，使用 renderStudentList
+}
+
+// ============ 老师后台题库管理 ============
+
+// 初始化老师后台年级选择器
+function initAdminGradeSelectors() {
+    var gradeSelect = document.getElementById('admin-grade-select');
+    if (!gradeSelect) return;
+    
+    gradeSelect.innerHTML = '';
+    for (var g in QUESTION_BANK) {
+        var grade = QUESTION_BANK[g];
+        var status = grade.enabled ? '&#x2705;' : '&#x274C;';
+        gradeSelect.innerHTML += '<option value="' + g + '">' + status + ' ' + grade.name + '</option>';
+    }
+    
+    onAdminGradeChange();
+}
+
+// 年级变化时更新册数选择
+function onAdminGradeChange() {
+    var grade = document.getElementById('admin-grade-select').value;
+    var bookSelect = document.getElementById('admin-book-select');
+    bookSelect.innerHTML = '';
+    
+    var gradeData = QUESTION_BANK[grade];
+    if (gradeData) {
+        for (var b in gradeData.books) {
+            var book = gradeData.books[b];
+            var status = book.enabled ? '&#x2705;' : '&#x274C;';
+            bookSelect.innerHTML += '<option value="' + b + '">' + status + ' ' + book.name + '</option>';
+        }
+    }
+    
+    // 更新启用/禁用按钮文字
+    updateAdminToggleButtons();
+    onAdminBookChange();
+}
+
+// 册数变化时更新单元列表
+function onAdminBookChange() {
+    var grade = document.getElementById('admin-grade-select').value;
+    var book = document.getElementById('admin-book-select').value;
+    renderAdminUnitList(grade, book);
+    updateAdminToggleButtons();
+}
+
+// 渲染单元列表
+function renderAdminUnitList(grade, book) {
+    var container = document.getElementById('admin-unit-list');
+    if (!container) return;
+    
+    var bank = getQuestionBank(grade, book);
+    if (!bank) {
+        container.innerHTML = '<p style="color:#868E96;">该册数未启用或不存在</p>';
+        return;
+    }
+    
+    var html = '<h4 style="margin-bottom:10px;">&#x1F4CB; 单元列表</h4>';
+    html += '<table style="width:100%;border-collapse:collapse;font-size:13px;">';
+    html += '<tr style="background:#E8F5E9;"><th style="padding:8px;text-align:left;">单元</th><th style="padding:8px;">题目数</th><th style="padding:8px;">状态</th><th style="padding:8px;">操作</th></tr>';
+    
+    var unitCount = 0;
+    for (var u in bank.units) {
+        var unit = bank.units[u];
+        unitCount++;
+        var status = unit.enabled ? '&#x2705; 已启用' : '&#x274C; 已禁用';
+        var btnText = unit.enabled ? '禁用' : '启用';
+        var btnStyle = unit.enabled ? 'background:#FF6B6B;' : 'background:#51CF66;';
+        
+        html += '<tr style="border-bottom:1px solid #E9ECEF;">';
+        html += '<td style="padding:10px 8px;">' + unit.name + '</td>';
+        html += '<td style="padding:10px 8px;text-align:center;">' + unit.questions.length + ' 题</td>';
+        html += '<td style="padding:10px 8px;text-align:center;">' + status + '</td>';
+        html += '<td style="padding:10px 8px;text-align:center;"><button onclick="toggleUnitEnabled(\'' + grade + '\',\'' + book + '\',\'' + u + '\')" style="' + btnStyle + 'color:#fff;border:none;padding:4px 10px;border-radius:5px;cursor:pointer;">' + btnText + '</button></td>';
+        html += '</tr>';
+    }
+    
+    if (unitCount === 0) {
+        html += '<tr><td colspan="4" style="padding:20px;text-align:center;color:#868E96;">暂无单元数据</td></tr>';
+    }
+    
+    html += '</table>';
+    html += '<p style="margin-top:10px;font-size:12px;color:#868E96;">提示：点击"启用/禁用"按钮可控制该单元题目是否参与对战和练习</p>';
+    
+    container.innerHTML = html;
+}
+
+// 切换单元启用状态
+function toggleUnitEnabled(grade, book, unitId) {
+    var unit = QUESTION_BANK[grade].books[book].units[unitId];
+    unit.enabled = !unit.enabled;
+    toast((unit.enabled ? '已启用' : '已禁用') + ' ' + unit.name);
+    renderAdminUnitList(grade, book);
+}
+
+// 切换年级启用状态
+function toggleGradeEnabled() {
+    var grade = document.getElementById('admin-grade-select').value;
+    var gradeData = QUESTION_BANK[grade];
+    gradeData.enabled = !gradeData.enabled;
+    toast((gradeData.enabled ? '已启用' : '已禁用') + ' ' + gradeData.name);
+    
+    // 更新选择器显示
+    initAdminGradeSelectors();
+    
+    // 同步更新前端选择器
+    initGradeSelectors();
+}
+
+// 切换册数启用状态
+function toggleBookEnabled() {
+    var grade = document.getElementById('admin-grade-select').value;
+    var book = document.getElementById('admin-book-select').value;
+    var bookData = QUESTION_BANK[grade].books[book];
+    bookData.enabled = !bookData.enabled;
+    toast((bookData.enabled ? '已启用' : '已禁用') + ' ' + bookData.name);
+    
+    // 更新选择器显示
+    onAdminGradeChange();
+    
+    // 同步更新前端选择器
+    initGradeSelectors();
+}
+
+// 更新启用/禁用按钮文字
+function updateAdminToggleButtons() {
+    var grade = document.getElementById('admin-grade-select').value;
+    var book = document.getElementById('admin-book-select').value;
+    
+    var gradeBtn = document.getElementById('toggle-grade-btn');
+    var bookBtn = document.getElementById('toggle-book-btn');
+    
+    if (gradeBtn) {
+        gradeBtn.textContent = QUESTION_BANK[grade].enabled ? '禁用年级' : '启用年级';
+        gradeBtn.style.background = QUESTION_BANK[grade].enabled ? '#FF6B6B' : '#51CF66';
+    }
+    
+    if (bookBtn) {
+        bookBtn.textContent = QUESTION_BANK[grade].books[book].enabled ? '禁用册数' : '启用册数';
+        bookBtn.style.background = QUESTION_BANK[grade].books[book].enabled ? '#FF6B6B' : '#51CF66';
+    }
+}
+
+// ============ 对战系统（支持多年级） ============
+function startBotBattle() {
+    // 从选择器获取当前年级（默认三年级）
+    var gradeSelect = document.getElementById('battle-grade-select');
+    var grade = gradeSelect ? gradeSelect.value : '3';
+    var book = 'down';  // 默认下册
+    
+    // 获取对应年级的题库
+    var pool = getQuestionPool(grade, book, '0');
+    if (pool.length === 0) {
+        toast('该年级暂无题目');
+        return;
+    }
+    
+    S.isBotBattle = true;
+    S.battleProgress = {player: 0, opponent: 0, index: 0};
+    // 从对应年级题库中随机抽取题目
+    var count = Math.min(15, pool.length);
+    S.battleQuestions = pool.sort(function() { return Math.random() - 0.5; }).slice(0, count);
+    S.currentBattleGrade = grade;
+    S.currentBattleBook = book;
+    
+    document.getElementById('p1name').textContent = S.currentUser ? S.currentUser.name : '你';
+    document.getElementById('p2name').textContent = 'AI对手';
+    document.getElementById('p1av').textContent = (S.currentUser ? S.currentUser.name : '你').charAt(0);
+    document.getElementById('p2av').textContent = 'AI';
+    document.getElementById('p1score').textContent = '0';
+    document.getElementById('p2score').textContent = '0';
+    showPage('battling');
+    loadQuestion();
+}
+
+// 修改 loadQuestion 函数以支持动态题目数量
+function loadQuestion() {
+    var i = S.battleProgress.index;
+    var total = S.battleQuestions.length;
+    if (i >= total) {
+        endBattle();
+        return;
+    }
+    var q = S.battleQuestions[i];
+    S.currentQuestion = q;
+    var typeMap = {'lw': '听单词选中文', 'ls': '听句子选中文', 'c2e': '听中文选英文', 'sp': '拼写单词'};
+    document.getElementById('q-num').textContent = i + 1 + ' / ' + total;
+    document.getElementById('q-progress').style.width = ((i + 1) / total * 100) + '%';
+    document.getElementById('q-type').textContent = typeMap[q.t] || '听力题';
+    if (q.t === 'sp') {
+        document.getElementById('q-text').textContent = q.c;
+        document.getElementById('q-opts').innerHTML = '';
+        document.getElementById('q-input').style.display = 'flex';
+        document.getElementById('spell-answer').value = '';
+        document.getElementById('spell-answer').focus();
+    } else {
+        document.getElementById('q-text').textContent = (q.t === 'lw' || q.t === 'ls') ? '' : q.c;
+        document.getElementById('q-input').style.display = 'none';
+        var html = '';
+        for (var j = 0; j < q.o.length; j++) {
+            html += '<div class="opt" onclick="selectOption(this,\'' + q.o[j] + '\')">' + q.o[j] + '</div>';
+        }
+        document.getElementById('q-opts').innerHTML = html;
+    }
+}
+
+function playAudio() {
+    var q = S.currentQuestion;
+    if (!q) return;
+    // 听中文选英文题型用中文朗读
+    var text, lang;
+    if (q.t === 'c2e') {
+        text = q.c;  // 中文
+        lang = 'zh-CN';
+    } else {
+        text = (q.t === 'lw' || q.t === 'ls') ? q.e : q.c;
+        lang = 'en-US';
+    }
+    var btn = document.getElementById('audio-btn');
+    btn.className = 'abtn playing';
+    // 立即停止之前的语音
+    speechSynthesis.cancel();
+    var s = new SpeechSynthesisUtterance(text);
+    s.lang = lang;
+    s.rate = 0.8;
+    s.onend = function() { btn.className = 'abtn'; };
+    speechSynthesis.speak(s);
+}
+
+function selectOption(el, val) {
+    var q = S.currentQuestion;
+    var correct = val === q.a || (q.t === 'c2e' && val === q.o[0]);
+    var opts = document.querySelectorAll('#q-opts .opt');
+    for (var i = 0; i < opts.length; i++) { opts[i].style.pointerEvents = 'none'; }
+    if (correct) {
+        el.className = 'opt correct';
+        S.battleProgress.player++;
+        document.getElementById('p1score').textContent = S.battleProgress.player;
+    } else {
+        el.className = 'opt wrong';
+        S.battleProgress.opponent++;
+        document.getElementById('q-opts').querySelectorAll('.opt').forEach(function(o) {
+            if (o.textContent === q.a || (q.t === 'c2e' && o.textContent === q.o[0])) {
+                o.className = 'opt correct';
+            }
+        });
+    }
+    document.getElementById('p2score').textContent = S.battleProgress.opponent;
+    setTimeout(function() {
+        S.battleProgress.index++;
+        loadQuestion();
+    }, 1500);
+}
+
+function submitSpell() {
+    var ans = document.getElementById('spell-answer').value.trim().toLowerCase();
+    var q = S.currentQuestion;
+    var correct = ans === q.a.toLowerCase();
+    if (correct) {
+        S.battleProgress.player++;
+        document.getElementById('p1score').textContent = S.battleProgress.player;
+    } else {
+        S.battleProgress.opponent++;
+        document.getElementById('p2score').textContent = S.battleProgress.opponent;
+    }
+    document.getElementById('q-input').style.display = 'none';
+    showFeedback(correct, q.a);
+    setTimeout(function() {
+        S.battleProgress.index++;
+        loadQuestion();
+    }, 1500);
+}
+
+function showFeedback(correct, answer) {
+    document.getElementById('feedback-icon').textContent = correct ? '&#x2713;' : '&#x2717;';
+    document.getElementById('feedback-text').textContent = correct ? '回答正确！' : '回答错误！';
+    document.getElementById('feedback-answer').textContent = correct ? '' : '正确答案: ' + answer;
+    document.getElementById('modal-feedback').className = 'modal active';
+    setTimeout(function() { document.getElementById('modal-feedback').className = 'modal'; }, 1200);
+}
+
+function endBattle() {
+    var p = S.battleProgress.player;
+    var o = S.battleProgress.opponent;
+    var total = S.battleQuestions ? S.battleQuestions.length : 15;
+    var rate = total > 0 ? Math.round(p / total * 100) : 0;
+    var result = 'draw', icon = '&#x1F91D;', title = '平局！', sub = '势均力敌，再来一局！';
+    if (p > o) { result = 'win'; icon = '&#x1F3C6;'; title = '你赢了！'; sub = '太棒了，继续加油！'; }
+    else if (p < o) { result = 'lose'; icon = '&#x1F622;'; title = '你输了！'; sub = '没关系，继续努力！'; }
+    document.getElementById('result-icon').textContent = icon;
+    document.getElementById('result-title').textContent = title;
+    document.getElementById('result-sub').textContent = sub;
+    document.getElementById('result-correct').textContent = p;
+    document.getElementById('result-rate').textContent = rate + '%';
+    document.getElementById('result-icon').className = 'ricon ' + result;
+    
+    // ===== 本地记录更新 =====
+    var playerName = S.currentUser ? S.currentUser.name : '我';
+    var opponentName = S.isBotBattle ? 'AI' : '同学';
+    var localRecord = {time: new Date().toLocaleString(), player: playerName, opponent: opponentName, playerScore: p, opponentScore: o, rate: rate, result: result, grade: S.currentBattleGrade || '3'};
+    S.battleHistory.unshift(localRecord);
+    if (S.battleHistory.length > 20) S.battleHistory = S.battleHistory.slice(0, 20);
+    if (S.currentUser) {
+        S.currentUser.games = (S.currentUser.games || 0) + 1;
+        if (result === 'win') S.currentUser.wins = (S.currentUser.wins || 0) + 1;
+    }
+    saveData();
+    
+    // ===== 提交战绩到服务器（所有设备同步对战记录和排名） =====
+    if (WS.connected && S.currentUser) {
+        WS.send({
+            type: 'submitBattleResult',
+            player: playerName,
+            opponent: opponentName,
+            playerScore: p,
+            opponentScore: o,
+            result: result
+        });
+    }
+    
+    showPage('result');
+}
+
+function quitBattle() {
+    if (confirm('确定要退出对战吗？')) {
+        showPage('battle');
+    }
+}
+
+// ============ 练习系统（支持多年级） ============
+
+// 年级变化时更新册数选择
+function onGradeChange() {
+    var grade = document.getElementById('select-grade').value;
+    var bookSelect = document.getElementById('select-book');
+    bookSelect.innerHTML = '';
+    
+    var gradeData = QUESTION_BANK[grade];
+    if (gradeData && gradeData.enabled) {
+        if (gradeData.books.up.enabled) {
+            bookSelect.innerHTML += '<option value="up">' + gradeData.books.up.name + '</option>';
+        }
+        if (gradeData.books.down.enabled) {
+            bookSelect.innerHTML += '<option value="down">' + gradeData.books.down.name + '</option>';
+        }
+    }
+    renderUnitSelect();
+    updateBankInfo();
+}
+
+// 册数变化时更新单元选择
+function onBookChange() {
+    renderUnitSelect();
+    updateBankInfo();
+}
+
+// 渲染单元选择
+function renderUnitSelect() {
+    var grade = document.getElementById('select-grade').value;
+    var book = document.getElementById('select-book').value;
+    var unitSelect = document.getElementById('select-unit');
+    unitSelect.innerHTML = '<option value="0">全部单元</option>';
+    
+    var units = getUnitList(grade, book);
+    for (var i = 0; i < units.length; i++) {
+        unitSelect.innerHTML += '<option value="' + units[i].id + '">' + units[i].name + ' (' + units[i].count + '题)</option>';
+    }
+}
+
+// 更新题库信息显示
+function updateBankInfo() {
+    var grade = document.getElementById('select-grade').value;
+    var book = document.getElementById('select-book').value;
+    var unit = document.getElementById('select-unit').value;
+    var info = document.getElementById('bank-info');
+    if (!info) return;
+    
+    var gradeName = getGradeName(grade);
+    var bookName = getBookName(book);
+    var pool = getQuestionPool(grade, book, unit);
+    info.innerHTML = '&#x1F4DA; ' + gradeName + ' ' + bookName + ' - 共 ' + pool.length + ' 题可选';
+}
+
+// 年级变化时更新册数选择（随机练习用）
+function onGradeChangeRandom() {
+    var grade = document.getElementById('select-grade-random').value;
+    var bookSelect = document.getElementById('select-book-random');
+    bookSelect.innerHTML = '';
+    
+    var gradeData = QUESTION_BANK[grade];
+    if (gradeData && gradeData.enabled) {
+        if (gradeData.books.up.enabled) {
+            bookSelect.innerHTML += '<option value="up">' + gradeData.books.up.name + '</option>';
+        }
+        if (gradeData.books.down.enabled) {
+            bookSelect.innerHTML += '<option value="down">' + gradeData.books.down.name + '</option>';
+        }
+    }
+    renderUnitSelectRandom();
+    updateBankInfoRandom();
+}
+
+// 渲染单元选择（随机练习用）
+function renderUnitSelectRandom() {
+    updateBankInfoRandom();
+}
+
+// 更新题库信息显示（随机练习用）
+function updateBankInfoRandom() {
+    var grade = document.getElementById('select-grade-random').value;
+    var book = document.getElementById('select-book-random').value;
+    var info = document.getElementById('bank-info-random');
+    if (!info) return;
+    
+    var gradeName = getGradeName(grade);
+    var bookName = getBookName(book);
+    var pool = getQuestionPool(grade, book, '0');
+    info.innerHTML = '&#x1F4DA; ' + gradeName + ' ' + bookName + ' - 共 ' + pool.length + ' 题';
+}
+
+// 年级变化时更新对战信息
+function onBattleGradeChange() {
+    var grade = document.getElementById('battle-grade-select').value;
+    var gradeName = getGradeName(grade);
+    var total = getGradeTotalQuestions(grade);
+    var info = document.getElementById('battle-grade-info');
+    if (info) {
+        info.innerHTML = '当前对战年级: ' + gradeName + ' | 题库: ' + total + ' 题';
+    }
+}
+
+// 初始化年级选择器
+function initGradeSelectors() {
+    // 初始化练习页面的年级选择器
+    var gradeSelect = document.getElementById('select-grade');
+    if (gradeSelect) {
+        gradeSelect.innerHTML = '';
+        var grades = getAvailableGrades();
+        for (var i = 0; i < grades.length; i++) {
+            var selected = grades[i].id === CURRENT_GRADE ? ' selected' : '';
+            gradeSelect.innerHTML += '<option value="' + grades[i].id + '"' + selected + '>' + grades[i].name + '</option>';
+        }
+        onGradeChange();
+    }
+    
+    // 初始化随机练习的年级选择器
+    var gradeSelectRandom = document.getElementById('select-grade-random');
+    if (gradeSelectRandom) {
+        gradeSelectRandom.innerHTML = '';
+        var grades = getAvailableGrades();
+        for (var i = 0; i < grades.length; i++) {
+            var selected = grades[i].id === CURRENT_GRADE ? ' selected' : '';
+            gradeSelectRandom.innerHTML += '<option value="' + grades[i].id + '"' + selected + '>' + grades[i].name + '</option>';
+        }
+        onGradeChangeRandom();
+    }
+    
+    // 初始化对战池的年级选择器
+    var battleGradeSelect = document.getElementById('battle-grade-select');
+    if (battleGradeSelect) {
+        battleGradeSelect.innerHTML = '';
+        var grades = getAvailableGrades();
+        for (var i = 0; i < grades.length; i++) {
+            var selected = grades[i].id === CURRENT_GRADE ? ' selected' : '';
+            battleGradeSelect.innerHTML += '<option value="' + grades[i].id + '"' + selected + '>' + grades[i].name + '</option>';
+        }
+        onBattleGradeChange();
+    }
+}
+
+// 开始练习
+function startPractice() {
+    var grade = document.getElementById('select-grade').value;
+    var book = document.getElementById('select-book').value;
+    var unit = document.getElementById('select-unit').value;
+    var count = parseInt(document.getElementById('practice-count').value);
+    
+    // 获取对应年级和册数的题库
+    var pool = getQuestionPool(grade, book, unit);
+    if (pool.length === 0) {
+        toast('该年级/册数暂无题目');
+        return;
+    }
+    
+    S.practiceQuestions = pool.sort(function() { return Math.random() - 0.5; }).slice(0, Math.min(count, pool.length));
+    S.practiceIndex = 0;
+    S.practiceCorrect = 0;
+    S.practiceWrong = 0;
+    S.practiceMode = true;
+    S.currentPracticeGrade = grade;
+    S.currentPracticeBook = book;
+    document.getElementById('prac-total').textContent = S.practiceQuestions.length;
+    showPage('practicing');
+    loadPracticeQuestion();
+}
+
+// 开始随机练习
+function startRandomPractice() {
+    var grade = document.getElementById('select-grade-random').value;
+    var book = document.getElementById('select-book-random').value;
+    
+    // 获取对应年级和册数的题库（全单元）
+    var pool = getQuestionPool(grade, book, '0');
+    if (pool.length === 0) {
+        toast('该年级/册数暂无题目');
+        return;
+    }
+    
+    var count = Math.min(10, pool.length);
+    S.practiceQuestions = pool.sort(function() { return Math.random() - 0.5; }).slice(0, count);
+    S.practiceIndex = 0;
+    S.practiceCorrect = 0;
+    S.practiceWrong = 0;
+    S.practiceMode = true;
+    S.currentPracticeGrade = grade;
+    S.currentPracticeBook = book;
+    document.getElementById('prac-total').textContent = S.practiceQuestions.length;
+    showPage('practicing');
+    loadPracticeQuestion();
+}
+
+function loadPracticeQuestion() {
+    if (S.practiceIndex >= S.practiceQuestions.length) {
+        showPracticeResult();
+        return;
+    }
+    var q = S.practiceQuestions[S.practiceIndex];
+    S.currentQuestion = q;
+    var typeMap = {'lw': '听单词选中文', 'ls': '听句子选中文', 'c2e': '听中文选英文', 'sp': '拼写单词'};
+    document.getElementById('prac-num').textContent = S.practiceIndex + 1;
+    document.getElementById('prac-type').textContent = typeMap[q.t] || '听力题';
+    document.getElementById('prac-text').textContent = q.t === 'sp' ? q.c : '';
+    document.getElementById('prac-correct').textContent = S.practiceCorrect;
+    document.getElementById('prac-wrong').textContent = S.practiceWrong;
+    if (q.t === 'sp') {
+        document.getElementById('prac-opts').innerHTML = '';
+        document.getElementById('prac-input').style.display = 'flex';
+        document.getElementById('prac-spell-answer').value = '';
+        document.getElementById('prac-spell-answer').focus();
+    } else {
+        document.getElementById('prac-input').style.display = 'none';
+        var html = '';
+        for (var i = 0; i < q.o.length; i++) {
+            html += '<div class="opt" onclick="selectPracOption(this,\'' + q.o[i] + '\')">' + q.o[i] + '</div>';
+        }
+        document.getElementById('prac-opts').innerHTML = html;
+    }
+    // 1秒后自动播放语音
+    setTimeout(function() {
+        playPracticeAudio(true);
+    }, 1000);
+}
+
+function playPracticeAudio(isAuto) {
+    var q = S.currentQuestion;
+    if (!q) return;
+    // 听中文选英文题型用中文朗读
+    var text, lang;
+    if (q.t === 'c2e') {
+        text = q.c;  // 中文
+        lang = 'zh-CN';
+    } else {
+        text = (q.t === 'lw' || q.t === 'ls') ? q.e : q.c;
+        lang = 'en-US';
+    }
+    
+    var btn = document.getElementById('audio-btn');
+    if (!btn) btn = event.target;
+    btn.className = 'abtn playing';
+    
+    // 立即停止之前的语音，立即播放新的
+    speechSynthesis.cancel();
+    var s = new SpeechSynthesisUtterance(text);
+    s.lang = lang;
+    s.rate = 0.8;
+    s.onend = function() { btn.className = 'abtn'; };
+    speechSynthesis.speak(s);
+}
+
+function selectPracOption(el, val) {
+    var q = S.currentQuestion;
+    var correct = val === q.a || (q.t === 'c2e' && val === q.o[0]);
+    var opts = document.querySelectorAll('#prac-opts .opt');
+    for (var i = 0; i < opts.length; i++) { opts[i].style.pointerEvents = 'none'; }
+    if (correct) {
+        el.className = 'opt correct';
+        S.practiceCorrect++;
+    } else {
+        el.className = 'opt wrong';
+        S.practiceWrong++;
+        document.querySelectorAll('#prac-opts .opt').forEach(function(o) {
+            if (o.textContent === q.a || (q.t === 'c2e' && o.textContent === q.o[0])) {
+                o.className = 'opt correct';
+            }
+        });
+    }
+    document.getElementById('prac-correct').textContent = S.practiceCorrect;
+    document.getElementById('prac-wrong').textContent = S.practiceWrong;
+    setTimeout(function() {
+        S.practiceIndex++;
+        loadPracticeQuestion();
+    }, 1500);
+}
+
+function submitPracSpell() {
+    var ans = document.getElementById('prac-spell-answer').value.trim().toLowerCase();
+    var q = S.currentQuestion;
+    var correct = ans === q.a.toLowerCase();
+    if (correct) {
+        S.practiceCorrect++;
+        document.getElementById('prac-correct').textContent = S.practiceCorrect;
+    } else {
+        S.practiceWrong++;
+        document.getElementById('prac-wrong').textContent = S.practiceWrong;
+    }
+    document.getElementById('prac-input').style.display = 'none';
+    showFeedback(correct, q.a);
+    setTimeout(function() {
+        S.practiceIndex++;
+        loadPracticeQuestion();
+    }, 1500);
+}
+
+function showPracticeResult() {
+    var c = S.practiceCorrect, w = S.practiceWrong;
+    var title = '练习完成！';
+    if (c > w) title = '太棒了！';
+    else if (c < w) title = '继续加油！';
+    toast(title + ' 正确' + c + '题，错误' + w + '题');
+    showPage('practice');
+}
+
+// ============ 对话房间（WebSocket版） ============
+function createRoom() {
+    if (WS.connected) {
+        // 使用WebSocket创建房间
+        WS.send({ type: 'createRoom' });
+        showPage('room-in');
+    } else {
+        // 后备方案：使用localStorage
+        var code = String(1000 + Math.floor(Math.random() * 9000));
+        var myName = S.currentUser ? S.currentUser.name : '我';
+        S.currentRoom = {code: code, users: [myName], isObserver: false};
+        document.getElementById('current-room-code').textContent = code;
+        document.getElementById('room-title').textContent = '对话中';
+        addChatMessage('system', '房间已创建！房间号：' + code + '，请分享给同学');
+        showPage('room-in');
+        updateRoomMembers();
+        setRoomMode(false);
+    }
+}
+
+function joinRoom() {
+    var code = document.getElementById('join-room-code').value.trim();
+    if (!code) {
+        toast('请输入房间号');
+        return;
+    }
+    
+    if (WS.connected) {
+        // 使用WebSocket加入房间
+        WS.send({ 
+            type: 'joinRoom', 
+            roomCode: code,
+            isObserver: false
+        });
+        // 不立即showPage，等待服务器响应
+    } else {
+        // 后备方案
+        S.currentRoom = {code: code, users: ['用户A', '我'], isObserver: false};
+        document.getElementById('current-room-code').textContent = code;
+        document.getElementById('room-title').textContent = '对话中';
+        addChatMessage('system', '你加入了房间 ' + code);
+        showPage('room-in');
+        updateRoomMembers();
+        setRoomMode(false);
+    }
+}
+
+function observeRoom() {
+    var code = document.getElementById('observe-room-code').value.trim();
+    if (!code) {
+        toast('请输入要观摩的房间号');
+        return;
+    }
+    
+    if (WS.connected) {
+        // 使用WebSocket观摩房间
+        WS.send({ 
+            type: 'joinRoom', 
+            roomCode: code,
+            isObserver: true
+        });
+    } else {
+        // 后备方案
+        S.currentRoom = {code: code, users: ['同学A', '同学B'], isObserver: true};
+        document.getElementById('current-room-code').textContent = code;
+        document.getElementById('room-title').textContent = '观摩中';
+        addChatMessage('system', '您正在观摩房间 ' + code);
+        addChatMessage('system', '您可以查看聊天记录和播放语音，但无法发言');
+        showPage('room-in');
+        updateRoomMembers();
+        setRoomMode(true);
+    }
+}
+
+function leaveRoom() {
+    if (!S.currentRoom) {
+        showPage('room');
+        return;
+    }
+    
+    if (WS.connected && WS.room) {
+        // 通过WebSocket离开房间
+        WS.send({ type: 'leaveRoom' });
+    }
+    
+    S.currentRoom = null;
+    S.warningCount = 0;
+    S.micActive = false;
+    showPage('room');
+}
+
+function closeRoom() {
+    if (WS.connected && WS.room) {
+        WS.send({ type: 'leaveRoom' });
+    }
+    
+    S.currentRoom = null;
+    S.warningCount = 0;
+    S.micActive = false;
+    showPage('room');
+}
+
+function updateRoomMembers() {
+    var container = document.getElementById('room-members');
+    if (!container || !S.currentRoom) return;
+    var html = '';
+    S.currentRoom.users.forEach(function(name) {
+        html += '<span style="background:#4CAF50;color:#fff;padding:3px 10px;border-radius:15px;font-size:12px;">' + name + '</span>';
+    });
+    container.innerHTML = html;
+}
+
+function setRoomMode(isObserver) {
+    var chatInputArea = document.getElementById('chat-input-area');
+    var observeTip = document.getElementById('observe-tip');
+    if (isObserver) {
+        // 观摩者模式：隐藏发言区域
+        if (chatInputArea) chatInputArea.style.display = 'none';
+        if (observeTip) observeTip.style.display = 'block';
+    } else {
+        // 正常模式：显示发言区域
+        if (chatInputArea) chatInputArea.style.display = 'block';
+        if (observeTip) observeTip.style.display = 'none';
+    }
+}
+
+function sendEmoji(e) {
+    addChatMessage('user', '<span style="font-size:20px;">' + e + '</span>');
+    // 通过WebSocket发送
+    if (WS.connected && S.currentRoom && !S.currentRoom.isObserver) {
+        WS.send({
+            type: 'chat',
+            content: '<span style="font-size:20px;">' + e + '</span>'
+        });
+    }
+}
+
+function addChatMessage(type, content, senderName) {
+    var div = document.createElement('div');
+    div.className = 'cmsg ' + type;
+    var myName = S.currentUser ? S.currentUser.name : '我';
+    if (type === 'user') {
+        div.innerHTML = '<div class="nm">' + myName + '</div><div class="ct">' + content + '</div>';
+    } else if (type === 'other') {
+        // 使用传入的发送者名称，否则显示"其他同学"
+        div.innerHTML = '<div class="nm">' + (senderName || '其他同学') + '</div><div class="ct">' + content + '</div>';
+    } else {
+        div.textContent = content;
+    }
+    document.getElementById('chat-messages').appendChild(div);
+    document.getElementById('chat-messages').scrollTop = document.getElementById('chat-messages').scrollHeight;
+}
+
+// 通过WebSocket发送聊天消息（供语音识别回调使用）
+function sendChatViaWebSocket(content) {
+    addChatMessage('user', content);
+    if (WS.connected && S.currentRoom && !S.currentRoom.isObserver) {
+        WS.send({
+            type: 'chat',
+            content: content
+        });
+    }
+}
+
+function playChatMessages() {
+    var container = document.getElementById('chat-messages');
+    if (!container) {
+        toast('找不到聊天区域');
+        return;
+    }
+    var messages = container.querySelectorAll('.cmsg');
+    if (messages.length === 0) {
+        toast('暂无聊天记录');
+        return;
+    }
+    
+    var btn = document.getElementById('play-chat-btn');
+    if (btn) {
+        btn.innerHTML = '&#x23F8; 播放中...';
+        btn.disabled = true;
+    }
+    
+    // 收集所有用户消息的文本
+    var texts = [];
+    messages.forEach(function(msg) {
+        var ct = msg.querySelector('.ct');
+        if (ct) {
+            var text = ct.textContent || ct.innerText || '';
+            text = text.trim();
+            if (text && text.length > 2 && /[a-zA-Z]{3,}/.test(text)) {
+                texts.push(text);
+            }
+        }
+    });
+    
+    if (texts.length === 0) {
+        toast('没有可播放的英语句子');
+        if (btn) { btn.innerHTML = '&#x1F50A; 播放语音'; btn.disabled = false; }
+        return;
+    }
+    
+    // 立即开始播放（不要延迟，浏览器需要直接的用户交互触发）
+    var index = 0;
+    function playNext() {
+        if (index >= texts.length) {
+            toast('播放完毕');
+            if (btn) { btn.innerHTML = '&#x1F50A; 播放语音'; btn.disabled = false; }
+            return;
+        }
+        
+        // 立即播放当前这条
+        var s = new SpeechSynthesisUtterance(texts[index]);
+        s.lang = 'en-US';
+        s.rate = 0.9;
+        s.volume = 1;
+        s.pitch = 1;
+        
+        s.onend = function() {
+            index++;
+            // 播完后延迟一点再播下一条
+            setTimeout(playNext, 500);
+        };
+        s.onerror = function(e) {
+            console.error('播放出错:', e);
+            index++;
+            setTimeout(playNext, 500);
+        };
+        
+        speechSynthesis.speak(s);
+    }
+    
+    // 点击按钮后立即播放第一条
+    playNext();
+}
+
+function toggleMic() {
+    S.micActive = !S.micActive;
+    var btn = document.getElementById('mic-btn');
+    if (S.micActive) {
+        btn.textContent = '&#x1F3A4; 识别中...';
+        btn.style.background = 'var(--p)';
+        startListening();
+    } else {
+        btn.textContent = '&#x1F3A4; 开始识别';
+        btn.style.background = '';
+    }
+}
+
+// ============ HTTPS 麦克风权限处理 ============
+function checkMicPermission() {
+    // 检查是否 HTTPS 环境
+    if (location.protocol !== 'https:' && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
+        return Promise.resolve(false);
+    }
+    
+    // 如果浏览器支持权限API
+    if (navigator.permissions && navigator.permissions.query) {
+        return navigator.permissions.query({ name: 'microphone' })
+            .then(function(result) {
+                if (result.state === 'granted') {
+                    return true;
+                } else if (result.state === 'prompt') {
+                    // 需要用户授权
+                    return true; // 让用户自己点击授权
+                } else {
+                    return false;
+                }
+            })
+            .catch(function() {
+                return true; // API不支持，假设可以
+            });
+    }
+    
+    return Promise.resolve(true);
+}
+
+// 在首次用户交互时请求麦克风权限
+function requestMicAccess() {
+    checkMicPermission().then(function(allowed) {
+        if (!allowed) {
+            toast('请允许麦克风权限才能使用语音识别');
+        }
+    });
+}
+
+function startListening() {
+    if (!S.micActive) return;
+    
+    // HTTPS 环境检查
+    if (location.protocol !== 'https:' && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
+        toast('请使用 HTTPS 访问以启用语音识别');
+        S.micActive = false;
+        var btn = document.getElementById('mic-btn');
+        if (btn) {
+            btn.textContent = '&#x1F3A4; 开始识别';
+            btn.style.background = '';
+        }
+        return;
+    }
+    
+    if ('webkitSpeechRecognition' in window) {
+        var r = new webkitSpeechRecognition();
+        r.continuous = true;
+        r.interimResults = true;
+        r.lang = 'en-US';
+        r.onresult = function(event) {
+            var t = event.results[event.results.length - 1][0].transcript;
+            if (event.results[event.results.length - 1].isFinal) {
+                // 检测是否包含中文字符
+                var hasChinese = /[\u4e00-\u9fa5]/.test(t);
+                // 检测是否像拼音：去除标点后转小写，检查是否每个单词都很短
+                var cleanText = t.replace(/[^a-zA-Z\s]/g, ' ').trim().toLowerCase();
+                var isPinyinLike = false;
+                if (cleanText.length > 0) {
+                    var words = cleanText.split(/\s+/);
+                    // 如果每个单词都很短（≤4个字母），认为是拼音
+                    isPinyinLike = words.length > 0 && words.every(function(w) { return w.length > 0 && w.length <= 4; });
+                }
+                
+                if (hasChinese || isPinyinLike) {
+                    S.warningCount++;
+                    var area = document.getElementById('warning-area');
+                    var msg = hasChinese ? '检测到中文' : '未识别到有效英语内容';
+                    area.innerHTML = '<div style="background:#FFF3CD;color:#856404;padding:10px;border-radius:8px;margin-top:10px;">&#x26A0; 警告 ' + S.warningCount + '/3：' + msg + '，请使用英语！</div>';
+                    if (S.warningCount >= 3) {
+                        S.warningCount = 0;
+                        document.getElementById('warning-area').innerHTML = '';
+                        toast('已累计3次警告，已被踢出房间');
+                        closeRoom();
+                    }
+                } else {
+                    // 只有有效的英语才会输出到聊天框并通过WebSocket发送
+                    sendChatViaWebSocket(t);
+                }
+            }
+        };
+        r.onerror = function() {
+            if (S.micActive) setTimeout(startListening, 1000);
+        };
+        r.start();
+    } else {
+        toast('您的浏览器不支持语音识别');
+        S.micActive = false;
+        toggleMic();
+    }
+}
+
+// ============ 记录和排名 ============
+function renderRecordList() {
+    var list = document.getElementById('record-list');
+    var myName = S.currentUser ? S.currentUser.name : '我';
+    var myRecords = [];
+    for (var i = 0; i < S.battleHistory.length; i++) {
+        if (S.battleHistory[i].player === myName) {
+            myRecords.push(S.battleHistory[i]);
+        }
+    }
+    if (myRecords.length === 0) {
+        list.innerHTML = '<p style="color:#868E96;text-align:center;padding:20px;">暂无对战记录</p><p style="color:#868E96;text-align:center;">快去发起挑战吧！</p>';
+    } else {
+        var html = '';
+        for (var i = 0; i < myRecords.length; i++) {
+            var r = myRecords[i];
+            var resText = r.result === 'win' ? '胜' : (r.result === 'lose' ? '负' : '平');
+            html += '<div class="recitem"><div class="rechdr"><span class="recopp">vs ' + r.opponent + '</span><span class="recres ' + r.result + '">' + resText + '</span></div><div class="recstats"><span>' + r.time + '</span><span>正确: ' + r.playerScore + '题</span><span>正确率: ' + r.rate + '%</span></div></div>';
+        }
+        list.innerHTML = html;
+    }
+}
+
+function renderRankList() {
+    var list = document.getElementById('rank-list');
+    var sorted = S.verifiedUsers.slice().sort(function(a, b) {
+        if ((b.wins || 0) !== (a.wins || 0)) return (b.wins || 0) - (a.wins || 0);
+        var ar = a.games ? a.wins / a.games : 0;
+        var br = b.games ? b.wins / b.games : 0;
+        return br - ar;
+    });
+    if (sorted.length === 0) {
+        list.innerHTML = '<p style="color:#868E96;text-align:center;padding:20px;">暂无排名数据</p><p style="color:#868E96;text-align:center;">等同学们注册后就有啦！</p>';
+    } else {
+        var html = '';
+        for (var i = 0; i < sorted.length; i++) {
+            var u = sorted[i];
+            var cls = '';
+            var numCls = '';
+            if (i === 0) { cls = 'top3'; numCls = 'gold'; }
+            else if (i === 1) { cls = 'top3'; numCls = 'silver'; }
+            else if (i === 2) { cls = 'top3'; numCls = 'bronze'; }
+            var rate = u.games ? Math.round(u.wins / u.games * 100) : 0;
+            html += '<div class="ritem ' + cls + '"><div class="rnum ' + numCls + '">' + (i + 1) + '</div><div class="rinfo"><div class="rname">' + u.name + '</div><div class="rclass">' + (u.games || 0) + '场对战</div></div><div class="rscore"><div class="rwins">' + (u.wins || 0) + '胜</div><div class="rrate">' + rate + '%胜率</div></div></div>';
+        }
+        list.innerHTML = html;
+    }
+}
+
+// ============ 工具函数 ============
+function toast(msg) {
+    var t = document.createElement('div');
+    t.className = 'toast';
+    t.textContent = msg;
+    t.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.8);color:#fff;padding:15px 25px;border-radius:10px;z-index:9999;animation:fadeIn .3s;';
+    document.body.appendChild(t);
+    setTimeout(function() { t.remove(); }, 2000);
+}
+
+// ============ 启动 ============
+init();
+</script>
+</body>
+</html>
